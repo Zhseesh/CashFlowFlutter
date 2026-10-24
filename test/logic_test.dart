@@ -73,7 +73,7 @@ void main() {
 
     test('encode lalu parse menghasilkan data yang sama', () {
       final json = JsonBackup.encode(
-          BackupData(categories: [cat], transactions: [tx]));
+          const BackupData(categories: [cat], transactions: [tx]));
       final back = JsonBackup.parse(json);
       expect(back.categories.single.name, 'Gaji');
       expect(back.transactions.single.id, 7);

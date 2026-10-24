@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+// Category bentrok dengan anotasi Category milik Flutter.
+import 'package:flutter/foundation.dart' hide Category;
 
 import '../data/repository.dart';
 import '../models/models.dart';

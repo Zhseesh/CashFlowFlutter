@@ -61,7 +61,7 @@ void main() {
         type: TxType.income,
         iconName: 'payments',
         colorHex: '#10B981');
-    final tx = CashTransaction(
+    const tx = CashTransaction(
       id: 7,
       title: 'Gaji',
       amount: 100,

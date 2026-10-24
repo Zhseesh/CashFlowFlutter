@@ -284,7 +284,7 @@ class PdfExporter {
         'Saldo (Rp)',
       ],
       data: rows,
-      headerStyle: pw.TextStyle(
+      headerStyle: const pw.TextStyle(
           fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
       headerDecoration: pw.BoxDecoration(color: _emerald),
       cellStyle: const pw.TextStyle(fontSize: 8),

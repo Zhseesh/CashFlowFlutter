@@ -92,10 +92,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _importJson() async {
-    final res = await FilePicker.platform.pickFiles(
+    final res = await FilePicker.pickFiles(
         type: FileType.custom, allowedExtensions: ['json']);
-    if (res == null || res.files.single.path == null) return;
-    final raw = await File(res.files.single.path!).readAsString();
+    if (res.isEmpty) return;
+    final path = res.first.path;
+    if (path == null) return;
+    final raw = await File(path).readAsString();
     final parsed = await JsonBackupService.parse(raw);
     if (!mounted) return;
     final mode = await showDialog<String>(

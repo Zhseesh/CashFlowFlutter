@@ -47,7 +47,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _shareFile(File file, String mime) async {
-    await Share.shareXFiles([XFile(file.path, mimeType: mime)], text: 'Cash Flow Export');
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path, mimeType: mime)],
+        text: 'Cash Flow Export',
+      ),
+    );
     _toast('Berkas siap: ${file.path.split('/').last}');
   }
 

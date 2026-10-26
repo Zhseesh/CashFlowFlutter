@@ -145,7 +145,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<Category>(
-                  value: _category,
+                  initialValue: _category,
                   decoration: const InputDecoration(labelText: 'Kategori'),
                   items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
                   onChanged: (c) => setState(() => _category = c),

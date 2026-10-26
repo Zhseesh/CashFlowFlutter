@@ -90,7 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       padding: const EdgeInsets.all(32),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                       ),
                       child: const Column(
                         children: [
@@ -101,7 +101,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     )
                   else
-                    ..._recent.map((t) => TransactionTile(transaction: t, onChanged: _load)),
+                    ..._recent.map((t) => TransactionTile(
+                      transaction: t,
+                      onChanged: (_) => _load(),
+                    )),
                 ],
               ),
             ),

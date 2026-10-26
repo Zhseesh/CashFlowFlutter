@@ -29,12 +29,12 @@ class PdfExportService {
         _summaryCard(saldoAwal, totalIncome, totalExpense, fmt),
         pw.SizedBox(height: 20),
         pw.Text('Grafik Bulanan $year',
-            style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
+            style: const pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 8),
         _barChart(monthlyData),
         pw.SizedBox(height: 20),
         pw.Text('Rincian Mutasi',
-            style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
+            style: const pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 8),
         _table(transactions, saldoAwal, fmt),
       ],
@@ -56,7 +56,7 @@ class PdfExportService {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text('Laporan Arus Kas',
-              style: pw.TextStyle(
+              style: const pw.TextStyle(
                   fontSize: 20,
                   fontWeight: pw.FontWeight.bold,
                   color: PdfColors.teal800)),
@@ -213,7 +213,7 @@ class PdfExportService {
   static pw.Widget _th(String t) => pw.Padding(
         padding: const pw.EdgeInsets.all(4),
         child: pw.Text(t,
-            style: pw.TextStyle(
+            style: const pw.TextStyle(
                 fontSize: 8,
                 fontWeight: pw.FontWeight.bold,
                 color: PdfColors.teal900)),

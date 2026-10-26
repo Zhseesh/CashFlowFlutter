@@ -19,7 +19,7 @@ class BalanceCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF10B981).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
+          BoxShadow(color: const Color(0xFF10B981).withValues(alpha:0.3), blurRadius: 20, offset: const Offset(0, 10)),
         ],
       ),
       child: Column(
@@ -29,7 +29,7 @@ class BalanceCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Saldo Saat Ini', style: TextStyle(color: Colors.white70, fontSize: 13)),
-              Icon(Icons.account_balance_wallet_outlined, color: Colors.white.withOpacity(0.7), size: 22),
+              Icon(Icons.account_balance_wallet_outlined, color: Colors.white.withValues(alpha:0.7), size: 22),
             ],
           ),
           const SizedBox(height: 8),
@@ -50,7 +50,7 @@ class BalanceCard extends StatelessWidget {
   Widget _mini(IconData icon, String label, double val, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha:0.12), borderRadius: BorderRadius.circular(14)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

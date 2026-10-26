@@ -49,7 +49,7 @@ class CashFlowApp extends StatelessWidget {
         elevation: 0,
         centerTitle: false,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         color: isDark ? const Color(0xFF1E293B) : Colors.white,

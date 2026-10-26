@@ -96,7 +96,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               alignment: BarChartAlignment.spaceAround,
                               maxY: _maxY(),
                               barTouchData: BarTouchData(enabled: false),
-                              gridData: FlGridData(show: true, drawVerticalLine: false),
+                              gridData: const FlGridData(show: true, drawVerticalLine: false),
                               borderData: FlBorderData(show: false),
                               titlesData: FlTitlesData(
                                 topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -199,7 +199,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                   LinearProgressIndicator(
                                     value: pct,
                                     minHeight: 8,
-                                    backgroundColor: Colors.grey.withOpacity(0.15),
+                                    backgroundColor: Colors.grey.withValues(alpha:0.15),
                                     color: const Color(0xFFE11D48),
                                     borderRadius: BorderRadius.circular(4),
                                   ),

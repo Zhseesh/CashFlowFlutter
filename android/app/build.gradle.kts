@@ -24,7 +24,8 @@ if (hasKeystore) {
 
 android {
     namespace = "com.zsheesh.cashflow"
-    compileSdk = 35
+    compileSdk = 36
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -38,7 +39,7 @@ android {
     defaultConfig {
         applicationId = "com.zsheesh.cashflow"
         minSdk = 21
-        targetSdk = 35
+        targetSdk = 36
         versionCode = flutterVersionCode
         versionName = flutterVersionName
     }

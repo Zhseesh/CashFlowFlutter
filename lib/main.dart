@@ -1,43 +1,68 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'screens/main_shell.dart';
 
-import 'data/database_helper.dart';
-import 'data/repository.dart';
-import 'state/cashflow_controller.dart';
-import 'state/controller_scope.dart';
-import 'theme.dart';
-import 'ui/home_shell.dart';
-
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('id_ID');
-
-  final controller =
-      CashFlowController(CashFlowRepository(DatabaseHelper.instance));
-  runApp(CashFlowApp(controller: controller));
-  controller.load();
+  await initializeDateFormatting('id_ID', null);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+  ));
+  runApp(const CashFlowApp());
 }
 
 class CashFlowApp extends StatelessWidget {
-  const CashFlowApp({super.key, required this.controller});
-
-  final CashFlowController controller;
+  const CashFlowApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ControllerScope(
-      controller: controller,
-      child: MaterialApp(
-        title: 'Cash Flow',
-        debugShowCheckedModeBanner: false,
-        theme: buildTheme(Brightness.light),
-        darkTheme: buildTheme(Brightness.dark),
-        themeMode: ThemeMode.system,
-        locale: const Locale('id', 'ID'),
-        supportedLocales: const [Locale('id', 'ID'), Locale('en')],
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        home: const HomeShell(),
+    return MaterialApp(
+      title: 'Cash Flow',
+      debugShowCheckedModeBanner: false,
+      theme: _buildTheme(Brightness.light),
+      darkTheme: _buildTheme(Brightness.dark),
+      themeMode: ThemeMode.system,
+      home: const MainShell(),
+    );
+  }
+
+  ThemeData _buildTheme(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final base = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF10B981),
+      brightness: brightness,
+    );
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: base.copyWith(
+        primary: const Color(0xFF10B981),
+        secondary: const Color(0xFFE11D48),
+      ),
+      scaffoldBackgroundColor:
+          isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+      appBarTheme: AppBarTheme(
+        backgroundColor:
+            isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
+        elevation: 0,
+        centerTitle: false,
+      ),
+      cardTheme: CardTheme(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }

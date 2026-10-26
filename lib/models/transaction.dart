@@ -1,0 +1,46 @@
+class TransactionRecord {
+  final int? id;
+  final String title;
+  final double amount;
+  final String type;
+  final int? categoryId;
+  final String categoryName;
+  final int dateMillis;
+  final String? note;
+
+  const TransactionRecord({
+    this.id,
+    required this.title,
+    required this.amount,
+    required this.type,
+    this.categoryId,
+    required this.categoryName,
+    required this.dateMillis,
+    this.note,
+  });
+
+  bool get isIncome => type == 'INCOME';
+  DateTime get date => DateTime.fromMillisecondsSinceEpoch(dateMillis);
+
+  Map<String, dynamic> toMap() => {
+        if (id != null) 'id': id,
+        'title': title,
+        'amount': amount,
+        'type': type,
+        'category_id': categoryId,
+        'category_name': categoryName,
+        'date_millis': dateMillis,
+        'note': note,
+      };
+
+  factory TransactionRecord.fromMap(Map<String, dynamic> m) => TransactionRecord(
+        id: m['id'] as int?,
+        title: m['title'] as String,
+        amount: (m['amount'] as num).toDouble(),
+        type: m['type'] as String,
+        categoryId: m['category_id'] as int?,
+        categoryName: m['category_name'] as String,
+        dateMillis: m['date_millis'] as int,
+        note: m['note'] as String?,
+      );
+}

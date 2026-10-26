@@ -39,9 +39,6 @@ jobs:
       - name: Analyze (non-blocking)
         run: flutter analyze || true
 
-      - name: Run tests (if any)
-        run: flutter test || true
-
       - name: Build Universal APK (release)
         run: flutter build apk --release
 

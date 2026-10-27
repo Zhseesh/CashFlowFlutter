@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'data/cashflow_repository.dart';
 import 'screens/main_shell.dart';
+import 'utils/app_state.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
+  
+  // Inisialisasi Tabungan Pertama
+  final repo = CashFlowRepository();
+  final wallets = await repo.getWallets();
+  if (wallets.isNotEmpty) {
+    AppState.activeWallet.value = wallets.first;
+  }
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,

@@ -7,6 +7,7 @@ import '../services/csv_export_service.dart';
 import '../services/json_backup_service.dart';
 import '../services/pdf_export_service.dart';
 import '../utils/app_events.dart';
+import '../utils/app_state.dart';
 import '../utils/formatters.dart';
 
 class ReportsScreen extends StatefulWidget {
@@ -23,16 +24,28 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   void initState() {
     super.initState();
+    AppState.activeWallet.addListener(_loadSaldo);
     _loadSaldo();
   }
 
+  @override
+  void dispose() {
+    AppState.activeWallet.removeListener(_loadSaldo);
+    super.dispose();
+  }
+
   Future<void> _loadSaldo() async {
-    final s = await _repo.getSaldoAwal();
+    final walletId = AppState.activeWalletId;
+    if (walletId == null) return;
+    
+    final s = await _repo.getSaldoAwal(walletId);
     if (mounted) setState(() => _saldoAwal = s);
   }
 
-  void _toast(String m) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+  void _toast(String m) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+  }
 
   Future<void> _run(Future<void> Function() fn) async {
     if (_busy) return;
@@ -57,13 +70,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _exportPdf() async {
+    final walletId = AppState.activeWalletId;
+    if (walletId == null) return;
+
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-    final txs = await _repo.getTransactions(from: start, to: end, limit: 10000);
-    final inc = await _repo.totalByType('INCOME', from: start, to: end);
-    final exp = await _repo.totalByType('EXPENSE', from: start, to: end);
-    final monthly = await _repo.monthlyTotals(now.year);
+    
+    final txs = await _repo.getTransactions(walletId: walletId, from: start, to: end, limit: 10000);
+    final inc = await _repo.totalByType('INCOME', walletId: walletId, from: start, to: end);
+    final exp = await _repo.totalByType('EXPENSE', walletId: walletId, from: start, to: end);
+    final monthly = await _repo.monthlyTotals(now.year, walletId: walletId);
+    
     final file = await PdfExportService.buildReport(
       transactions: txs,
       saldoAwal: _saldoAwal,
@@ -78,28 +96,40 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _exportCsv() async {
-    final all = await _repo.getTransactions(limit: 100000);
+    final walletId = AppState.activeWalletId;
+    if (walletId == null) return;
+    
+    final all = await _repo.getTransactions(walletId: walletId, limit: 100000);
     final file = await CsvExportService.export(transactions: all, saldoAwal: _saldoAwal);
     await _shareFile(file, 'text/csv');
   }
 
   Future<void> _backupJson() async {
+    final walletId = AppState.activeWalletId;
+    if (walletId == null) return;
+
     final cats = await _repo.getCategories();
-    final txs = await _repo.getTransactions(limit: 100000);
+    final txs = await _repo.getTransactions(walletId: walletId, limit: 100000);
     final file = await JsonBackupService.export(
         categories: cats, transactions: txs, saldoAwal: _saldoAwal);
     await _shareFile(file, 'application/json');
   }
 
   Future<void> _importJson() async {
+    final walletId = AppState.activeWalletId;
+    if (walletId == null) return;
+
     final res = await FilePicker.pickFiles(
         type: FileType.custom, allowedExtensions: ['json']);
     if (res.isEmpty) return;
+    
     final path = res.first.path;
     if (path == null) return;
+    
     final raw = await File(path).readAsString();
     final parsed = await JsonBackupService.parse(raw);
     if (!mounted) return;
+    
     final mode = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
@@ -113,20 +143,26 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
     );
     if (mode == null) return;
+    
     if (mode == 'replace') {
-      final all = await _repo.getTransactions(limit: 1000000);
+      final all = await _repo.getTransactions(walletId: walletId, limit: 1000000);
       for (final t in all) {
         if (t.id != null) await _repo.deleteTransaction(t.id!);
       }
     }
-    await _repo.restoreTransactions(parsed.transactions);
-    await _repo.setSaldoAwal(parsed.saldoAwal);
+    
+    await _repo.restoreTransactions(parsed.transactions, walletId: walletId);
+    await _repo.setSaldoAwal(walletId, parsed.saldoAwal);
+    
     AppEvents.notify();
     await _loadSaldo();
     _toast('Impor berhasil: ${parsed.transactions.length} transaksi');
   }
 
   Future<void> _editSaldo() async {
+    final walletId = AppState.activeWalletId;
+    if (walletId == null) return;
+
     final ctrl = TextEditingController(text: _saldoAwal.toStringAsFixed(0));
     final res = await showDialog<double>(
       context: context,
@@ -147,7 +183,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
     );
     if (res != null) {
-      await _repo.setSaldoAwal(res);
+      await _repo.setSaldoAwal(walletId, res);
       await _loadSaldo();
       AppEvents.notify();
       _toast('Saldo awal diperbarui');

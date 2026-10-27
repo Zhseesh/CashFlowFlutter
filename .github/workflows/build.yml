@@ -39,11 +39,33 @@ jobs:
       - name: Analyze (non-blocking)
         run: flutter analyze || true
 
+      # ── SIGNING: Decode keystore dari secret ──────────────────
+      - name: Setup signing keystore
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          # File .jks sudah ada di folder android/ berkat git checkout
+          cat > android/key.properties <<EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=$PWD/android/upload-keystore.jks
+          EOF
+          echo "✅ Keystore siap"
+
       - name: Build Universal APK (release)
         run: flutter build apk --release
 
       - name: Build Split-per-ABI APKs (release)
         run: flutter build apk --release --split-per-abi
+
+      # ── CLEANUP: Hapus keystore dari workspace ────────────────
+      - name: Cleanup keystore
+        if: always()
+        run: |
+          rm -f android/upload-keystore.jks android/key.properties
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v5

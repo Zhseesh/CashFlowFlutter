@@ -3,9 +3,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../data/cashflow_repository.dart';
+import '../models/transaction.dart';
 import '../services/csv_export_service.dart';
 import '../services/json_backup_service.dart';
 import '../services/pdf_export_service.dart';
+import '../services/attachment_service.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
@@ -118,7 +120,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Future<void> _importJson() async {
     final walletId = AppState.activeWalletId;
     if (walletId == null) return;
-
+  
     final res = await FilePicker.pickFiles(
         type: FileType.custom, allowedExtensions: ['json']);
     if (res.isEmpty) return;
@@ -143,20 +145,57 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
     );
     if (mode == null) return;
-    
-    if (mode == 'replace') {
-      final all = await _repo.getTransactions(walletId: walletId, limit: 1000000);
-      for (final t in all) {
-        if (t.id != null) await _repo.deleteTransaction(t.id!);
+  
+    setState(() => _busy = true);
+    try {
+      if (mode == 'replace') {
+        final all = await _repo.getTransactions(walletId: walletId, limit: 1000000);
+        for (final t in all) {
+          if (t.id != null) await _repo.deleteTransaction(t.id!);
+        }
       }
+      
+      // Proses transaksi dan simpan lampiran Base64 ke file fisik
+      final finalTxs = <TransactionRecord>[];
+      for (final pt in parsed.transactions) {
+        String? newFilename;
+        
+        // Jika ada lampiran Base64, simpan sebagai file
+        if (pt.attachmentBase64 != null) {
+          final parts = pt.attachmentBase64!.split('|');
+          if (parts.length == 2) {
+            newFilename = await AttachmentService.saveFromBase64(parts[0], parts[1]);
+          }
+        }
+        
+        // Buat record baru dengan path lampiran yang baru (atau null)
+        final updatedTx = TransactionRecord(
+          id: null, // Biarkan database membuat ID baru
+          walletId: walletId,
+          title: pt.transaction.title,
+          amount: pt.transaction.amount,
+          type: pt.transaction.type,
+          categoryId: pt.transaction.categoryId,
+          categoryName: pt.transaction.categoryName,
+          dateMillis: pt.transaction.dateMillis,
+          note: pt.transaction.note,
+          attachmentPath: newFilename,
+        );
+        finalTxs.add(updatedTx);
+      }
+      
+      // Simpan ke database
+      await _repo.restoreTransactions(finalTxs, walletId: walletId);
+      await _repo.setSaldoAwal(walletId, parsed.saldoAwal);
+      
+      AppEvents.notify();
+      await _loadSaldo();
+      _toast('Impor berhasil: ${parsed.transactions.length} transaksi');
+    } catch (e) {
+      _toast('Gagal impor: $e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
-    
-    await _repo.restoreTransactions(parsed.transactions, walletId: walletId);
-    await _repo.setSaldoAwal(walletId, parsed.saldoAwal);
-    
-    AppEvents.notify();
-    await _loadSaldo();
-    _toast('Impor berhasil: ${parsed.transactions.length} transaksi');
   }
 
   Future<void> _editSaldo() async {

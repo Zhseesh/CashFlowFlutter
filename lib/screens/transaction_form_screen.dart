@@ -9,6 +9,7 @@ import '../models/transaction.dart';
 import '../services/attachment_service.dart';
 import '../utils/app_events.dart';
 import '../utils/formatters.dart';
+import '../utils/app_state.dart';
 
 class TransactionFormScreen extends StatefulWidget {
   final TransactionRecord? editing;
@@ -160,6 +161,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           _amountCtrl.text.replaceAll('.', '').replaceAll(',', '.'));
       final t = TransactionRecord(
         id: widget.editing?.id,
+        walletId: widget.editing?.walletId ?? AppState.activeWalletId, // <-- TAMBAHKAN INI
         title: _titleCtrl.text.trim(),
         amount: amount,
         type: _type,

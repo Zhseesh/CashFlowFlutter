@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.9"
+  better_download_saver:
+    dependency: "direct main"
+    description:
+      name: better_download_saver
+      sha256: fc2ce5c608298d5b9ea792605c98cedef5017e3fccb3e36a261c1df38a336165
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1"
   bidi:
     dependency: transitive
     description:

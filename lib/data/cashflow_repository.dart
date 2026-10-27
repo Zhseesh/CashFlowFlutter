@@ -1,11 +1,36 @@
 import 'package:sqflite/sqflite.dart' show ConflictAlgorithm;
 import '../models/category.dart';
 import '../models/transaction.dart';
+import '../models/wallet.dart';
 import 'database_helper.dart';
 
 class CashFlowRepository {
   final DatabaseHelper _helper = DatabaseHelper.instance;
 
+  // ── WALLET METHODS ──────────────────────────────────────
+  Future<List<Wallet>> getWallets() async {
+    final db = await _helper.db;
+    final rows = await db.query('wallets', orderBy: 'created_at ASC');
+    return rows.map(Wallet.fromMap).toList();
+  }
+
+  Future<int> insertWallet(Wallet wallet) async {
+    final db = await _helper.db;
+    return db.insert('wallets', wallet.toMap());
+  }
+
+  Future<void> deleteWallet(int id) async {
+    final db = await _helper.db;
+    // ON DELETE CASCADE di tabel transaksi akan menghapus transaksinya juga
+    await db.delete('wallets', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> updateWalletName(int id, String newName) async {
+    final db = await _helper.db;
+    await db.update('wallets', {'name': newName}, where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ── TRANSACTION METHODS ─────────────────────────────────
   Future<List<Category>> getCategories({String? type}) async {
     final db = await _helper.db;
     final rows = await db.query(
@@ -18,19 +43,29 @@ class CashFlowRepository {
   }
 
   Future<List<TransactionRecord>> getTransactions({
+    required int walletId,
     DateTime? from,
     DateTime? to,
     int limit = 100,
+    String? searchQuery,
   }) async {
     final db = await _helper.db;
-    final where = <String>[];
-    final args = <Object?>[];
+    final where = <String>['wallet_id = ?'];
+    final args = <Object?>[walletId];
+    
     if (from != null) { where.add('date_millis >= ?'); args.add(from.millisecondsSinceEpoch); }
     if (to != null) { where.add('date_millis <= ?'); args.add(to.millisecondsSinceEpoch); }
+    
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      where.add('(title LIKE ? OR note LIKE ?)');
+      args.add('%$searchQuery%');
+      args.add('%$searchQuery%');
+    }
+  
     final rows = await db.query(
       'transactions',
-      where: where.isEmpty ? null : where.join(' AND '),
-      whereArgs: args.isEmpty ? null : args,
+      where: where.join(' AND '),
+      whereArgs: args,
       orderBy: 'date_millis DESC, id DESC',
       limit: limit,
     );
@@ -52,26 +87,30 @@ class CashFlowRepository {
     await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<double> getSaldoAwal() async {
+  // ── SETTINGS / SALDO ────────────────────────────────────
+  Future<double> getSaldoAwal(int walletId) async {
     final db = await _helper.db;
-    final rows = await db.query('settings', where: 'key = ?', whereArgs: ['saldo_awal']);
+    final key = 'saldo_awal_$walletId'; // Scope saldo per wallet
+    final rows = await db.query('settings', where: 'key = ?', whereArgs: [key]);
     if (rows.isEmpty) return 0;
     return double.tryParse(rows.first['value'] as String) ?? 0;
   }
 
-  Future<void> setSaldoAwal(double value) async {
+  Future<void> setSaldoAwal(int walletId, double value) async {
     final db = await _helper.db;
+    final key = 'saldo_awal_$walletId';
     await db.insert(
       'settings',
-      {'key': 'saldo_awal', 'value': value.toString()},
+      {'key': key, 'value': value.toString()},
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
-  Future<double> totalByType(String type, {DateTime? from, DateTime? to}) async {
+  // ── AGGREGATIONS (harus spesifik wallet) ────────────────
+  Future<double> totalByType(String type, {required int walletId, DateTime? from, DateTime? to}) async {
     final db = await _helper.db;
-    final where = <String>['type = ?'];
-    final args = <Object?>[type];
+    final where = <String>['type = ?', 'wallet_id = ?'];
+    final args = <Object?>[type, walletId];
     if (from != null) { where.add('date_millis >= ?'); args.add(from.millisecondsSinceEpoch); }
     if (to != null) { where.add('date_millis <= ?'); args.add(to.millisecondsSinceEpoch); }
     final result = await db.rawQuery(
@@ -81,14 +120,14 @@ class CashFlowRepository {
     return (result.first['total'] as num?)?.toDouble() ?? 0;
   }
 
-  Future<double> getCurrentBalance() async {
-    final awal = await getSaldoAwal();
-    final income = await totalByType('INCOME');
-    final expense = await totalByType('EXPENSE');
+  Future<double> getCurrentBalance(int walletId) async {
+    final awal = await getSaldoAwal(walletId);
+    final income = await totalByType('INCOME', walletId: walletId);
+    final expense = await totalByType('EXPENSE', walletId: walletId);
     return awal + income - expense;
   }
 
-  Future<Map<int, ({double income, double expense})>> monthlyTotals(int year) async {
+  Future<Map<int, ({double income, double expense})>> monthlyTotals(int year, {required int walletId}) async {
     final db = await _helper.db;
     final start = DateTime(year, 1, 1).millisecondsSinceEpoch;
     final end = DateTime(year + 1, 1, 1).millisecondsSinceEpoch;
@@ -96,9 +135,9 @@ class CashFlowRepository {
       SELECT strftime('%m', date_millis/1000, 'unixepoch', 'localtime') AS m,
              type, COALESCE(SUM(amount),0) AS total
       FROM transactions
-      WHERE date_millis >= ? AND date_millis < ?
+      WHERE date_millis >= ? AND date_millis < ? AND wallet_id = ?
       GROUP BY m, type
-    ''', [start, end]);
+    ''', [start, end, walletId]);
     final map = <int, ({double income, double expense})>{};
     for (int i = 1; i <= 12; i++) { map[i] = (income: 0.0, expense: 0.0); }
     for (final r in rows) {
@@ -114,10 +153,10 @@ class CashFlowRepository {
   }
 
   Future<List<({String category, double total})>> categoryBreakdown(
-    String type, {DateTime? from, DateTime? to}) async {
+    String type, {required int walletId, DateTime? from, DateTime? to}) async {
     final db = await _helper.db;
-    final where = <String>['type = ?'];
-    final args = <Object?>[type];
+    final where = <String>['type = ?', 'wallet_id = ?'];
+    final args = <Object?>[type, walletId];
     if (from != null) { where.add('date_millis >= ?'); args.add(from.millisecondsSinceEpoch); }
     if (to != null) { where.add('date_millis <= ?'); args.add(to.millisecondsSinceEpoch); }
     final rows = await db.rawQuery('''
@@ -132,11 +171,12 @@ class CashFlowRepository {
         .toList();
   }
 
-  Future<void> restoreTransactions(List<TransactionRecord> list) async {
+  Future<void> restoreTransactions(List<TransactionRecord> list, {required int walletId}) async {
     final db = await _helper.db;
     await db.transaction((txn) async {
       for (final t in list) {
         final map = t.toMap()..remove('id');
+        map['wallet_id'] = walletId; // Paksa masuk ke wallet yang dipilih
         await txn.insert('transactions', map);
       }
     });

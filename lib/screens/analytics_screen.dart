@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../data/cashflow_repository.dart';
 import '../utils/formatters.dart';
+import '../utils/app_state.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -22,15 +23,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   void initState() {
     super.initState();
+    AppState.activeWallet.addListener(_load); // <-- TAMBAHKAN
     _load();
   }
 
+  @override
+  void dispose() {
+    AppState.activeWallet.removeListener(_load); // <-- TAMBAHKAN
+    super.dispose();
+  }
+
   Future<void> _load() async {
+    final walletId = AppState.activeWalletId;
+    if (walletId == null) return;
+    
     setState(() => _loading = true);
-    final monthly = await _repo.monthlyTotals(_year);
+    final monthly = await _repo.monthlyTotals(_year, walletId: walletId);
     final start = DateTime(_year, _month, 1);
     final end = DateTime(_year, _month + 1, 0, 23, 59, 59);
-    final breakdown = await _repo.categoryBreakdown('EXPENSE', from: start, to: end);
+    final breakdown = await _repo.categoryBreakdown('EXPENSE', walletId: walletId, from: start, to: end);
     if (!mounted) return;
     setState(() {
       _monthly = monthly;

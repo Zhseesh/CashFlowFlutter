@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
@@ -64,5 +65,12 @@ class AttachmentService {
     if (result.type != ResultType.done) {
       throw Exception(result.message);
     }
+  }
+  static Future<String> saveFromBase64(String base64Data, String extension) async {
+    final dir = await _dir();
+    final filename = 'att_imp_${DateTime.now().microsecondsSinceEpoch}$extension';
+    final dest = File('${dir.path}/$filename');
+    await dest.writeAsBytes(base64Decode(base64Data));
+    return filename;
   }
 }

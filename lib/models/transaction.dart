@@ -1,5 +1,6 @@
 class TransactionRecord {
   final int? id;
+  final int? walletId; // Tambahan
   final String title;
   final double amount;
   final String type;
@@ -11,6 +12,7 @@ class TransactionRecord {
 
   const TransactionRecord({
     this.id,
+    this.walletId, // Tambahan
     required this.title,
     required this.amount,
     required this.type,
@@ -27,6 +29,7 @@ class TransactionRecord {
 
   Map<String, dynamic> toMap() => {
         if (id != null) 'id': id,
+        if (walletId != null) 'wallet_id': walletId, // Tambahan
         'title': title,
         'amount': amount,
         'type': type,
@@ -39,6 +42,7 @@ class TransactionRecord {
 
   factory TransactionRecord.fromMap(Map<String, dynamic> m) => TransactionRecord(
         id: m['id'] as int?,
+        walletId: m['wallet_id'] as int?, // Tambahan
         title: m['title'] as String,
         amount: (m['amount'] as num).toDouble(),
         type: m['type'] as String,

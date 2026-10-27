@@ -4,12 +4,12 @@ import '../utils/formatters.dart';
 
 class TransactionTile extends StatelessWidget {
   final TransactionRecord transaction;
-  final ValueChanged<TransactionRecord>? onChanged;
+  final ValueChanged<TransactionRecord>? onTap;
 
   const TransactionTile({
     super.key,
     required this.transaction,
-    this.onChanged,
+    this.onTap,
   });
 
   @override
@@ -36,7 +36,7 @@ class TransactionTile extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: onChanged != null ? () => onChanged!(transaction) : null,
+          onTap: onTap != null ? () => onTap!(transaction) : null,
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
@@ -88,6 +88,14 @@ class TransactionTile extends StatelessWidget {
                     fontSize: 14,
                   ),
                 ),
+                if (onTap != null) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 16,
+                    color: Colors.grey.shade400,
+                  ),
+                ],
               ],
             ),
           ),

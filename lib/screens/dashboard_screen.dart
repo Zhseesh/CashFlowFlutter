@@ -4,7 +4,7 @@ import '../models/transaction.dart';
 import '../utils/app_events.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
-import 'add_transaction_sheet.dart';
+import 'transaction_form_screen.dart';   // ← ganti dari add_transaction_sheet.dart
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -51,14 +51,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  Future<void> _openAddSheet() async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => const AddTransactionSheet(),
+  // ← Nama method berubah dari _openAddSheet
+  void _openAddScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const TransactionFormScreen()),
+    );
+  }
+
+  // ← Method baru untuk edit
+  void _openEditScreen(TransactionRecord tx) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => TransactionFormScreen(editing: tx)),
     );
   }
 
@@ -69,7 +74,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: const Text('Cash Flow', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddSheet,
+        onPressed: _openAddScreen,    // ← method baru
         icon: const Icon(Icons.add),
         label: const Text('Transaksi'),
       ),
@@ -103,7 +108,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   else
                     ..._recent.map((t) => TransactionTile(
                       transaction: t,
-                      onChanged: (_) => _load(),
+                      onTap: _openEditScreen,    // ← dari onChanged
                     )),
                 ],
               ),

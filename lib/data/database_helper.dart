@@ -6,7 +6,7 @@ class DatabaseHelper {
   DatabaseHelper._();
   static final DatabaseHelper instance = DatabaseHelper._();
   static const _dbName = 'cashflow.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
   Database? _db;
 
   Future<Database> get db async {
@@ -20,6 +20,7 @@ class DatabaseHelper {
       p.join(path, _dbName),
       version: _dbVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -47,6 +48,7 @@ class DatabaseHelper {
         category_name TEXT NOT NULL,
         date_millis INTEGER NOT NULL,
         note TEXT,
+        attachment_path TEXT,
         FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE SET NULL
       )
     ''');
@@ -61,6 +63,14 @@ class DatabaseHelper {
 
     for (final c in Category.defaults) {
       await db.insert('categories', c.toMap());
+    }
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // v1 -> v2: tambah kolom attachment_path
+      await db.execute(
+          'ALTER TABLE transactions ADD COLUMN attachment_path TEXT');
     }
   }
 }

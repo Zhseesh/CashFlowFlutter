@@ -69,17 +69,27 @@ class TransactionTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        '${transaction.categoryName} • '
-                        '${transaction.date.day}/'
-                        '${transaction.date.month}/'
-                        '${transaction.date.year}',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 11,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              '${transaction.categoryName} • '
+                              '${transaction.date.day}/'
+                              '${transaction.date.month}/'
+                              '${transaction.date.year}',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 11,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (transaction.hasAttachment) ...[
+                            const SizedBox(width: 4),
+                            Icon(Icons.attach_file, size: 11, color: Colors.grey.shade500),
+                          ],
+                        ],
                       ),
                     ],
                   ),

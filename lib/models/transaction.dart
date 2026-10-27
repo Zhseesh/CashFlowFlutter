@@ -7,6 +7,7 @@ class TransactionRecord {
   final String categoryName;
   final int dateMillis;
   final String? note;
+  final String? attachmentPath;
 
   const TransactionRecord({
     this.id,
@@ -17,9 +18,11 @@ class TransactionRecord {
     required this.categoryName,
     required this.dateMillis,
     this.note,
+    this.attachmentPath,
   });
 
   bool get isIncome => type == 'INCOME';
+  bool get hasAttachment => attachmentPath != null;
   DateTime get date => DateTime.fromMillisecondsSinceEpoch(dateMillis);
 
   Map<String, dynamic> toMap() => {
@@ -31,6 +34,7 @@ class TransactionRecord {
         'category_name': categoryName,
         'date_millis': dateMillis,
         'note': note,
+        'attachment_path': attachmentPath,
       };
 
   factory TransactionRecord.fromMap(Map<String, dynamic> m) => TransactionRecord(
@@ -42,5 +46,6 @@ class TransactionRecord {
         categoryName: m['category_name'] as String,
         dateMillis: m['date_millis'] as int,
         note: m['note'] as String?,
+        attachmentPath: m['attachment_path'] as String?,
       );
 }

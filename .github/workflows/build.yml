@@ -42,27 +42,17 @@ jobs:
       # ── SIGNING: Decode keystore dari secret ──────────────────
       - name: Setup signing keystore
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          # 1. Decode base64 → file .jks
-          echo "$KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
-
-          # 2. Buat key.properties
+          # File .jks sudah ada di folder android/ berkat git checkout
           cat > android/key.properties <<EOF
           storePassword=$KEYSTORE_PASSWORD
           keyPassword=$KEY_PASSWORD
           keyAlias=$KEY_ALIAS
           storeFile=$PWD/android/upload-keystore.jks
           EOF
-
-          # 3. Verifikasi file keystore valid
-          keytool -list -keystore android/upload-keystore.jks \
-            -storepass "$KEYSTORE_PASSWORD" \
-            -alias "$KEY_ALIAS" > /dev/null
-
           echo "✅ Keystore siap"
 
       - name: Build Universal APK (release)

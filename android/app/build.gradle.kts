@@ -43,11 +43,12 @@ android {
     signingConfigs {
         if (hasKeystore) {
             create("release") {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                val storeFile = keystoreProperties["storeFile"] as String
-                storeFile = rootProject.fil("android/$storeFileValue")
-                storePassword = keystoreProperties["storePassword"] as String
+              keyAlias = keystoreProperties["keyAlias"] as String
+              keyPassword = keystoreProperties["keyPassword"] as String
+              storePassword = keystoreProperties["storePassword"] as String
+              
+              // Karena disimpan di folder android/, gunakan rootProject
+              storeFile = rootProject.file("upload-keystore.jks") 
             }
         }
     }

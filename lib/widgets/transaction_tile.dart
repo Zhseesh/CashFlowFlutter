@@ -20,15 +20,17 @@ class TransactionTile extends StatelessWidget {
     final icon = isIncome ? Icons.south_west : Icons.north_east;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      // 1. Ubah margin: Hapus horizontal 16 karena ListView sudah memberi padding 16
+      // Sisakan bottom margin untuk jarak antar item
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.03), // Shadow lebih halus
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -38,16 +40,18 @@ class TransactionTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: onTap != null ? () => onTap!(transaction) : null,
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            // 2. Sesuaikan padding: horizontal 16, vertical 12
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
+                // 3. Perkecil ukuran ikon container
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: color, size: 20),
+                  child: Icon(icon, color: color, size: 18),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -58,7 +62,8 @@ class TransactionTile extends StatelessWidget {
                         transaction.title,
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                          fontSize: 15, // Sedikit lebih besar dari sebelumnya
+                          letterSpacing: -0.2,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -91,8 +96,8 @@ class TransactionTile extends StatelessWidget {
                 if (onTap != null) ...[
                   const SizedBox(width: 4),
                   Icon(
-                    Icons.chevron_right,
-                    size: 16,
+                    Icons.chevron_right_rounded,
+                    size: 18,
                     color: Colors.grey.shade400,
                   ),
                 ],

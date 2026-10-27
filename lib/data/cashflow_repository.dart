@@ -61,7 +61,7 @@ class CashFlowRepository {
       args.add('%$searchQuery%');
       args.add('%$searchQuery%');
     }
-
+  
     final rows = await db.query(
       'transactions',
       where: where.join(' AND '),

@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:path_provider/path_provider.dart';
 import '../models/transaction.dart';
-import 'export_service.dart';
 
 class CsvExportService {
   static Future<File?> export({
@@ -31,17 +29,11 @@ class CsvExportService {
       ].join(','));
     }
     
-    final safeName = ExportService.sanitizeName(walletName);
-    final fileName = 'CashFlow_${safeName}_${DateTime.now().millisecondsSinceEpoch}.csv';
-    
-    final savedPath = await ExportService.saveToPublicDownloads(
-      fileName: fileName,
-      bytes: Uint8List.fromList(utf8.encode(buf.toString())),
-      mimeType: 'text/csv',
-    );
-
-    if (savedPath == null) return null;
-    return File(savedPath);
+    final safeName = walletName.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/CashFlow_${safeName}_${DateTime.now().millisecondsSinceEpoch}.csv');
+    await file.writeAsString(buf.toString(), flush: true);
+    return file;
   }
 
   static String _esc(String s) => '"${s.replaceAll('"', '""')}"';

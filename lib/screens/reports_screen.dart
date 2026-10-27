@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
 import '../data/cashflow_repository.dart';
 import '../models/transaction.dart';
 import '../services/attachment_service.dart';
@@ -60,29 +61,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  Future<void> _shareFile(File file, String mime) async {
-    final displayPath = file.path.replaceFirst('/storage/emulated/0/', '');
-    if (!mounted) return;
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Tersimpan di:\n$displayPath'),
-        duration: const Duration(seconds: 4),
-        action: SnackBarAction(
-          label: 'Bagikan',
-          onPressed: () {
-            SharePlus.instance.share(
-              ShareParams(
-                files: [XFile(file.path, mimeType: mime)],
-                text: 'Cash Flow Export',
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   Future<void> _exportPdf() async {
     final walletId = AppState.activeWalletId;
     final walletName = AppState.activeWallet.value?.name ?? 'Utama';
@@ -98,21 +76,27 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final monthly = await _repo.monthlyTotals(now.year, walletId: walletId);
     
     final file = await PdfExportService.buildReport(
-      walletName: walletName,
-      transactions: txs,
-      saldoAwal: _saldoAwal,
-      totalIncome: inc,
-      totalExpense: exp,
-      periodStart: start,
-      periodEnd: end,
-      monthlyData: monthly,
-      year: now.year,
+      walletName: walletName, transactions: txs, saldoAwal: _saldoAwal,
+      totalIncome: inc, totalExpense: exp, periodStart: start, periodEnd: end,
+      monthlyData: monthly, year: now.year,
     );
-    if (file == null) {
-      _toast('Gagal menyimpan PDF.');
-      return;
+
+    if (file == null) return _toast('Gagal membuat PDF.');
+    
+    final bytes = await file.readAsBytes();
+    final fileName = file.path.split('/').last;
+
+    // PERUBAHAN 1: Tipe data Uri? (bukan String?)
+    // PERUBAHAN 2: Parameter type & allowedExtensions dihapus
+    Uri? outputFile = await FilePicker.saveFile(
+      dialogTitle: 'Simpan Laporan PDF',
+      fileName: fileName,
+      bytes: bytes,
+    );
+
+    if (outputFile != null) {
+      _toast('Berhasil disimpan!');
     }
-    await _shareFile(file, 'application/pdf');
   }
 
   Future<void> _exportCsv() async {
@@ -121,16 +105,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
     if (walletId == null) return;
     
     final all = await _repo.getTransactions(walletId: walletId, limit: 100000);
-    final file = await CsvExportService.export(
-      walletName: walletName,
-      transactions: all, 
-      saldoAwal: _saldoAwal,
+    final file = await CsvExportService.export(walletName: walletName, transactions: all, saldoAwal: _saldoAwal);
+    
+    if (file == null) return _toast('Gagal membuat CSV.');
+
+    final bytes = await file.readAsBytes();
+    final fileName = file.path.split('/').last;
+
+    // PERUBAHAN: Uri? dan hapus parameter deprecated
+    Uri? outputFile = await FilePicker.saveFile(
+      dialogTitle: 'Simpan Data CSV',
+      fileName: fileName,
+      bytes: bytes,
     );
-    if (file == null) {
-      _toast('Gagal menyimpan CSV.');
-      return;
+
+    if (outputFile != null) {
+      _toast('Berhasil disimpan!');
     }
-    await _shareFile(file, 'text/csv');
   }
 
   Future<void> _backupJson() async {
@@ -139,24 +130,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
     final cats = await _repo.getCategories();
     final txs = await _repo.getTransactions(walletId: walletId, limit: 100000);
-    final file = await JsonBackupService.export(
-        categories: cats, transactions: txs, saldoAwal: _saldoAwal);
     
-    if (file == null) {
-      _toast('Gagal menyimpan JSON.');
-      return;
+    final jsonString = await JsonBackupService.export(categories: cats, transactions: txs, saldoAwal: _saldoAwal);
+    
+    final fileName = 'CashFlow_Backup_${DateTime.now().millisecondsSinceEpoch}.json';
+    
+    // PERUBAHAN: Uri? dan hapus parameter deprecated
+    Uri? outputFile = await FilePicker.saveFile(
+      dialogTitle: 'Simpan Cadangan JSON',
+      fileName: fileName,
+      bytes: Uint8List.fromList(utf8.encode(jsonString)),
+    );
+
+    if (outputFile != null) {
+      _toast('Berhasil disimpan!');
     }
-    await _shareFile(file, 'application/json');
   }
 
   Future<void> _importJson() async {
     final walletId = AppState.activeWalletId;
     if (walletId == null) return;
 
-    final res = await FilePicker.pickFiles(
-        type: FileType.custom, allowedExtensions: ['json']);
+    final res = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['json']);
     if (res.isEmpty) return;
-    
     final path = res.first.path;
     if (path == null) return;
     
@@ -189,26 +185,21 @@ class _ReportsScreenState extends State<ReportsScreen> {
       
       final finalTxs = <TransactionRecord>[];
       for (final pt in parsed.transactions) {
-        String? newFilename;
+        final newFilenames = <String>[];
         
-        if (pt.attachmentBase64 != null) {
-          final parts = pt.attachmentBase64!.split('|');
-          if (parts.length == 2) {
-            newFilename = await AttachmentService.saveFromBase64(parts[0], parts[1]);
-          }
+        for (final b64Data in pt.attachmentBases64) {
+           final parts = b64Data.split('|');
+           if (parts.length == 2) {
+              final newFilename = await AttachmentService.saveFromBase64(parts[0], parts[1]);
+              newFilenames.add(newFilename);
+           }
         }
         
         final updatedTx = TransactionRecord(
-          id: null,
-          walletId: walletId,
-          title: pt.transaction.title,
-          amount: pt.transaction.amount,
-          type: pt.transaction.type,
-          categoryId: pt.transaction.categoryId,
-          categoryName: pt.transaction.categoryName,
-          dateMillis: pt.transaction.dateMillis,
-          note: pt.transaction.note,
-          attachmentPath: newFilename,
+          id: null, walletId: walletId, title: pt.transaction.title, amount: pt.transaction.amount,
+          type: pt.transaction.type, categoryId: pt.transaction.categoryId, categoryName: pt.transaction.categoryName,
+          dateMillis: pt.transaction.dateMillis, note: pt.transaction.note,
+          attachments: newFilenames,
         );
         finalTxs.add(updatedTx);
       }
@@ -299,16 +290,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             const SizedBox(height: 12),
             _section('Ekspor Dokumen'),
-            _item(Icons.picture_as_pdf, 'Ekspor PDF Bulanan',
-                'Laporan lengkap dengan grafik & mutasi', _exportPdf),
-            _item(Icons.table_chart, 'Ekspor CSV',
-                'Spreadsheet siap Excel/Sheets', _exportCsv),
+            _item(Icons.picture_as_pdf, 'Ekspor PDF Bulanan', 'Laporan lengkap dengan grafik & mutasi', _exportPdf),
+            _item(Icons.table_chart, 'Ekspor CSV', 'Spreadsheet siap Excel/Sheets', _exportCsv),
             const SizedBox(height: 12),
             _section('Cadangan Data'),
-            _item(Icons.backup, 'Cadangkan (JSON)',
-                'Simpan & bagikan seluruh data', _backupJson),
-            _item(Icons.restore, 'Pulihkan (JSON)',
-                'Impor dari berkas cadangan', _importJson),
+            _item(Icons.backup, 'Cadangkan (JSON)', 'Simpan & bagikan seluruh data', _backupJson),
+            _item(Icons.restore, 'Pulihkan (JSON)', 'Impor dari berkas cadangan', _importJson),
           ],
         ),
         if (_busy)
@@ -319,8 +306,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Widget _section(String s) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: Text(s,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+        child: Text(s, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
       );
 
   Widget _item(IconData icon, String title, String sub, Future<void> Function() onTap) {

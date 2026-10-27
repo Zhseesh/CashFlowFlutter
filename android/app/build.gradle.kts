@@ -45,7 +45,8 @@ android {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
+                val storeFile = keystoreProperties["storeFile"] as String
+                storeFile = rootProject.fil("android/$storeFileValue")
                 storePassword = keystoreProperties["storePassword"] as String
             }
         }

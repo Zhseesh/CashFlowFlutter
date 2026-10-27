@@ -6,7 +6,7 @@ class DatabaseHelper {
   DatabaseHelper._();
   static final DatabaseHelper instance = DatabaseHelper._();
   static const _dbName = 'cashflow.db';
-  static const _dbVersion = 3; // Naik ke v3
+  static const _dbVersion = 4; // Naik ke v4
   Database? _db;
 
   Future<Database> get db async {
@@ -30,7 +30,6 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     final batch = db.batch();
     
-    // Tabel Wallets (Baru)
     batch.execute('''
       CREATE TABLE wallets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +48,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Tabel transaksi dengan wallet_id
     batch.execute('''
       CREATE TABLE transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +59,7 @@ class DatabaseHelper {
         category_name TEXT NOT NULL,
         date_millis INTEGER NOT NULL,
         note TEXT,
-        attachment_path TEXT,
+        attachment_paths TEXT,
         FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE SET NULL,
         FOREIGN KEY(wallet_id) REFERENCES wallets(id) ON DELETE CASCADE
       )
@@ -83,7 +81,6 @@ class DatabaseHelper {
       await db.insert('categories', c.toMap());
     }
 
-    // Buat dompet default saat pertama kali install
     await db.insert('wallets', {
       'name': 'Dompet Utama',
       'created_at': DateTime.now().millisecondsSinceEpoch,
@@ -94,9 +91,7 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE transactions ADD COLUMN attachment_path TEXT');
     }
-    
     if (oldVersion < 3) {
-      // 1. Buat tabel wallets
       await db.execute('''
         CREATE TABLE wallets (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -104,24 +99,25 @@ class DatabaseHelper {
           created_at INTEGER NOT NULL
         )
       ''');
-      
-      // 2. Buat dompet default untuk menampung data lama
       final defaultWalletId = await db.insert('wallets', {
         'name': 'Dompet Utama',
         'created_at': DateTime.now().millisecondsSinceEpoch,
       });
-
-      // 3. Tambahkan kolom wallet_id ke tabel transactions (sementara nullable)
       await db.execute('ALTER TABLE transactions ADD COLUMN wallet_id INTEGER');
-      
-      // 4. Set semua transaksi lama ke dompet default
       await db.update('transactions', {'wallet_id': defaultWalletId});
-      
-      // 5. Buat index untuk performa
       await db.execute('CREATE INDEX idx_tx_wallet ON transactions(wallet_id)');
+    }
+    if (oldVersion < 4) {
+      // Migrasi ke multi-attachment
+      await db.execute('ALTER TABLE transactions ADD COLUMN attachment_paths TEXT');
       
-      // Catatan: SQLite tidak mendukung ALTER TABLE untuk menambah FOREIGN KEY.
-      // Tapi secara logika aplikasi, relasi ini akan dijaga oleh Repository.
+      final oldData = await db.query('transactions', where: 'attachment_path IS NOT NULL');
+      for (var row in oldData) {
+        final oldPath = row['attachment_path'] as String;
+        final jsonStr = '["$oldPath"]'; 
+        await db.update('transactions', {'attachment_paths': jsonStr}, 
+            where: 'id = ?', whereArgs: [row['id']]);
+      }
     }
   }
 }

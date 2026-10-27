@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../data/cashflow_repository.dart';
 import '../models/transaction.dart';
+import '../services/attachment_service.dart';
 import '../services/csv_export_service.dart';
 import '../services/json_backup_service.dart';
 import '../services/pdf_export_service.dart';
-import '../services/attachment_service.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
@@ -39,7 +39,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Future<void> _loadSaldo() async {
     final walletId = AppState.activeWalletId;
     if (walletId == null) return;
-    
     final s = await _repo.getSaldoAwal(walletId);
     if (mounted) setState(() => _saldoAwal = s);
   }
@@ -62,17 +61,31 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _shareFile(File file, String mime) async {
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path, mimeType: mime)],
-        text: 'Cash Flow Export',
+    final displayPath = file.path.replaceFirst('/storage/emulated/0/', '');
+    if (!mounted) return;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Tersimpan di:\n$displayPath'),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'Bagikan',
+          onPressed: () {
+            SharePlus.instance.share(
+              ShareParams(
+                files: [XFile(file.path, mimeType: mime)],
+                text: 'Cash Flow Export',
+              ),
+            );
+          },
+        ),
       ),
     );
-    _toast('Berkas siap: ${file.path.split('/').last}');
   }
 
   Future<void> _exportPdf() async {
     final walletId = AppState.activeWalletId;
+    final walletName = AppState.activeWallet.value?.name ?? 'Utama';
     if (walletId == null) return;
 
     final now = DateTime.now();
@@ -85,6 +98,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final monthly = await _repo.monthlyTotals(now.year, walletId: walletId);
     
     final file = await PdfExportService.buildReport(
+      walletName: walletName,
       transactions: txs,
       saldoAwal: _saldoAwal,
       totalIncome: inc,
@@ -94,15 +108,28 @@ class _ReportsScreenState extends State<ReportsScreen> {
       monthlyData: monthly,
       year: now.year,
     );
+    if (file == null) {
+      _toast('Gagal menyimpan PDF.');
+      return;
+    }
     await _shareFile(file, 'application/pdf');
   }
 
   Future<void> _exportCsv() async {
     final walletId = AppState.activeWalletId;
+    final walletName = AppState.activeWallet.value?.name ?? 'Utama';
     if (walletId == null) return;
     
     final all = await _repo.getTransactions(walletId: walletId, limit: 100000);
-    final file = await CsvExportService.export(transactions: all, saldoAwal: _saldoAwal);
+    final file = await CsvExportService.export(
+      walletName: walletName,
+      transactions: all, 
+      saldoAwal: _saldoAwal,
+    );
+    if (file == null) {
+      _toast('Gagal menyimpan CSV.');
+      return;
+    }
     await _shareFile(file, 'text/csv');
   }
 
@@ -114,13 +141,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final txs = await _repo.getTransactions(walletId: walletId, limit: 100000);
     final file = await JsonBackupService.export(
         categories: cats, transactions: txs, saldoAwal: _saldoAwal);
+    
+    if (file == null) {
+      _toast('Gagal menyimpan JSON.');
+      return;
+    }
     await _shareFile(file, 'application/json');
   }
 
   Future<void> _importJson() async {
     final walletId = AppState.activeWalletId;
     if (walletId == null) return;
-  
+
     final res = await FilePicker.pickFiles(
         type: FileType.custom, allowedExtensions: ['json']);
     if (res.isEmpty) return;
@@ -145,7 +177,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
     );
     if (mode == null) return;
-  
+
     setState(() => _busy = true);
     try {
       if (mode == 'replace') {
@@ -155,12 +187,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
         }
       }
       
-      // Proses transaksi dan simpan lampiran Base64 ke file fisik
       final finalTxs = <TransactionRecord>[];
       for (final pt in parsed.transactions) {
         String? newFilename;
         
-        // Jika ada lampiran Base64, simpan sebagai file
         if (pt.attachmentBase64 != null) {
           final parts = pt.attachmentBase64!.split('|');
           if (parts.length == 2) {
@@ -168,9 +198,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
           }
         }
         
-        // Buat record baru dengan path lampiran yang baru (atau null)
         final updatedTx = TransactionRecord(
-          id: null, // Biarkan database membuat ID baru
+          id: null,
           walletId: walletId,
           title: pt.transaction.title,
           amount: pt.transaction.amount,
@@ -184,7 +213,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         finalTxs.add(updatedTx);
       }
       
-      // Simpan ke database
       await _repo.restoreTransactions(finalTxs, walletId: walletId);
       await _repo.setSaldoAwal(walletId, parsed.saldoAwal);
       
@@ -237,6 +265,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            ValueListenableBuilder(
+              valueListenable: AppState.activeWallet,
+              builder: (context, wallet, _) {
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.folder_shared_outlined, size: 20, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Laporan untuk: ${wallet?.name ?? "-"}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
             Card(
               child: ListTile(
                 leading: const Icon(Icons.savings_outlined),

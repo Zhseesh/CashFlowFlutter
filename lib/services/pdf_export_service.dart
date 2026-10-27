@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../models/transaction.dart';
 import '../utils/formatters.dart';
+import 'export_service.dart';
 
 class PdfExportService {
-  static Future<File> buildReport({
+  static Future<File?> buildReport({
+    required String walletName,
     required List<TransactionRecord> transactions,
     required double saldoAwal,
     required double totalIncome,
@@ -24,7 +25,7 @@ class PdfExportService {
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(32),
       build: (ctx) => [
-        _header(periodStart, periodEnd),
+        _header(walletName, periodStart, periodEnd),
         pw.SizedBox(height: 16),
         _summaryCard(saldoAwal, totalIncome, totalExpense, fmt),
         pw.SizedBox(height: 20),
@@ -45,14 +46,20 @@ class PdfExportService {
       ),
     ));
 
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File(
-        '${dir.path}/CashFlow_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf');
-    await file.writeAsBytes(await doc.save());
-    return file;
+    final safeName = ExportService.sanitizeName(walletName);
+    final fileName = 'CashFlow_${safeName}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf';
+    
+    final savedPath = await ExportService.saveToPublicDownloads(
+      fileName: fileName,
+      bytes: await doc.save(),
+      mimeType: 'application/pdf',
+    );
+
+    if (savedPath == null) return null;
+    return File(savedPath);
   }
 
-  static pw.Widget _header(DateTime s, DateTime e) => pw.Column(
+  static pw.Widget _header(String walletName, DateTime s, DateTime e) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text('Laporan Arus Kas',
@@ -61,6 +68,12 @@ class PdfExportService {
                   fontWeight: pw.FontWeight.bold,
                   color: PdfColors.teal800)),
           pw.SizedBox(height: 4),
+          pw.Text('Tabungan: $walletName',
+              style: const pw.TextStyle(
+                  fontSize: 12,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.teal700)),
+          pw.SizedBox(height: 2),
           pw.Text('Periode: ${formatDate(s)} - ${formatDate(e)}',
               style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
           pw.Divider(color: PdfColors.teal700, thickness: 1.2),

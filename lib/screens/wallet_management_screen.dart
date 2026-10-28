@@ -134,7 +134,6 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
         title: const Text('Kelola Tabungan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      // Tambahkan padding bawah agar tidak tertutup FAB
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -148,70 +147,20 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _wallets.length,
-                      separatorBuilder: (_, __) => Divider(
-                        height: 1,
-                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
-                      ),
-                      itemBuilder: (context, i) {
-                        final w = _wallets[i];
-                        final isActive = AppState.activeWallet.value?.id == w.id;
-                        
-                        return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          onTap: () {
-                            AppState.activeWallet.value = w;
-                            Navigator.pop(context);
-                          },
-                          leading: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: isActive 
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                                  : (isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade50),
-                              shape: BoxShape.circle,
-                              border: isActive ? null : Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
+                    // MENGGUNAKAN COLUMN AGAR TINGGI PRESISI
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min, // Penting: agar tinggi pas dengan isi
+                      children: [
+                        for (int i = 0; i < _wallets.length; i++) ...[
+                          _buildWalletTile(_wallets[i], isDark),
+                          // Tampilkan divider jika bukan item terakhir
+                          if (i < _wallets.length - 1)
+                            Divider(
+                              height: 1,
+                              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
                             ),
-                            child: Icon(
-                              isActive ? Icons.check : Icons.account_balance_wallet_outlined,
-                              color: isActive ? const Color(0xFF10B981) : Colors.grey,
-                              size: 20,
-                            ),
-                          ),
-                          title: Text(
-                            w.name,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold, 
-                              fontSize: 14, 
-                              color: isActive ? const Color(0xFF10B981) : null
-                            ),
-                          ),
-                          subtitle: Text(
-                            'Dibuat: ${formatDate(DateTime.fromMillisecondsSinceEpoch(w.createdAt))}',
-                            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined, size: 20),
-                                color: Colors.grey,
-                                onPressed: () => _editWallet(w),
-                              ),
-                              if (_wallets.length > 1)
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline, size: 20),
-                                  color: Colors.grey,
-                                  onPressed: () => _deleteWallet(w),
-                                ),
-                            ],
-                          ),
-                        );
-                      },
+                        ]
+                      ],
                     ),
                   ),
                 ),
@@ -229,6 +178,63 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
         ),
         icon: const Icon(Icons.add),
         label: const Text('Tabungan', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
+  // Widget dipisah agar kode build lebih bersih
+  Widget _buildWalletTile(Wallet w, bool isDark) {
+    final isActive = AppState.activeWallet.value?.id == w.id;
+    
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      onTap: () {
+        AppState.activeWallet.value = w;
+        Navigator.pop(context);
+      },
+      leading: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: isActive 
+              ? const Color(0xFF10B981).withValues(alpha: 0.15)
+              : (isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade50),
+          shape: BoxShape.circle,
+          border: isActive ? null : Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
+        ),
+        child: Icon(
+          isActive ? Icons.check : Icons.account_balance_wallet_outlined,
+          color: isActive ? const Color(0xFF10B981) : Colors.grey,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        w.name,
+        style: TextStyle(
+          fontWeight: FontWeight.bold, 
+          fontSize: 14, 
+          color: isActive ? const Color(0xFF10B981) : null
+        ),
+      ),
+      subtitle: Text(
+        'Dibuat: ${formatDate(DateTime.fromMillisecondsSinceEpoch(w.createdAt))}',
+        style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, size: 20),
+            color: Colors.grey,
+            onPressed: () => _editWallet(w),
+          ),
+          if (_wallets.length > 1)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, size: 20),
+              color: Colors.grey,
+              onPressed: () => _deleteWallet(w),
+            ),
+        ],
       ),
     );
   }

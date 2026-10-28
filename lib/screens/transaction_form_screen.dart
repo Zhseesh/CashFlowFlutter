@@ -400,63 +400,73 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           children: [
-            // Segmented Toggle Minimalis
+            // ── ANIMASI SLIDING TOGGLE ──
             Container(
+              height: 48,
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
               ),
-              child: Row(
+              child: Stack(
                 children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: _saving ? null : () { setState(() { _type = 'INCOME'; _category = null; }); _loadCategories(); },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                  // 1. Background Geser (AnimatedAlign)
+                  AnimatedAlign(
+                    alignment: _type == 'INCOME' ? Alignment.centerLeft : Alignment.centerRight,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.5,
+                      heightFactor: 1.0,
+                      child: Container(
                         decoration: BoxDecoration(
-                          color: _type == 'INCOME' 
-                              ? (isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100) 
-                              : Colors.transparent,
+                          color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: _type == 'INCOME' ? (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade300) : Colors.transparent),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.check, size: 14, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey),
-                            const SizedBox(width: 6),
-                            Text('Pemasukan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey)),
-                          ],
+                          border: Border.all(
+                            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade300
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: _saving ? null : () { setState(() { _type = 'EXPENSE'; _category = null; }); _loadCategories(); },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _type == 'EXPENSE' 
-                              ? (isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100) 
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: _type == 'EXPENSE' ? (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade300) : Colors.transparent),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.arrow_outward, size: 14, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey),
-                            const SizedBox(width: 6),
-                            Text('Pengeluaran', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey)),
-                          ],
+                  
+                  // 2. Teks & Ikon Tombol
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: _saving ? null : () { setState(() { _type = 'INCOME'; _category = null; }); _loadCategories(); },
+                          behavior: HitTestBehavior.opaque,
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.check, size: 14, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey),
+                                const SizedBox(width: 6),
+                                Text('Pemasukan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey)),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: _saving ? null : () { setState(() { _type = 'EXPENSE'; _category = null; }); _loadCategories(); },
+                          behavior: HitTestBehavior.opaque,
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.arrow_outward, size: 14, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey),
+                                const SizedBox(width: 6),
+                                Text('Pengeluaran', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

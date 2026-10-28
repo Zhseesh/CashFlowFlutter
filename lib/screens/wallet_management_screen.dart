@@ -134,6 +134,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
         title: const Text('Kelola Tabungan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
+      // Tambahkan padding bawah agar tidak tertutup FAB
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -183,7 +184,11 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                           ),
                           title: Text(
                             w.name,
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isActive ? const Color(0xFF10B981) : null),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold, 
+                              fontSize: 14, 
+                              color: isActive ? const Color(0xFF10B981) : null
+                            ),
                           ),
                           subtitle: Text(
                             'Dibuat: ${formatDate(DateTime.fromMillisecondsSinceEpoch(w.createdAt))}',
@@ -210,6 +215,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 80), // Jarak aman untuk FAB
               ],
             ),
       floatingActionButton: FloatingActionButton.extended(

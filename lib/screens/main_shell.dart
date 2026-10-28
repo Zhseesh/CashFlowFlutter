@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 import 'analytics_screen.dart';
 import 'reports_screen.dart';
+import 'transaction_form_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -14,6 +15,11 @@ class _MainShellState extends State<MainShell> {
   int _index = 0;
   final _screens = const [DashboardScreen(), AnalyticsScreen(), ReportsScreen()];
 
+  // Fungsi untuk membuka form dari luar Dashboard
+  void _openAddScreen() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionFormScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -21,6 +27,19 @@ class _MainShellState extends State<MainShell> {
     return Scaffold(
       extendBody: true, // Agar transparan tembus ke bawah
       body: IndexedStack(index: _index, children: _screens),
+      
+      // FAB Dipindah ke sini agar tidak tertutup bottom nav
+      floatingActionButton: _index == 0 
+          ? FloatingActionButton(
+              onPressed: _openAddScreen,
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              elevation: 4,
+              shape: const CircleBorder(),
+              child: const Icon(Icons.add, size: 28),
+            )
+          : null,
+
       bottomNavigationBar: ClipRRect(
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),

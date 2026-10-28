@@ -86,10 +86,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  void _openAddScreen() async {
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionFormScreen()));
-  }
-
   void _openEditScreen(TransactionRecord tx) async {
     await Navigator.push(context, MaterialPageRoute(builder: (_) => TransactionFormScreen(editing: tx)));
   }
@@ -152,7 +148,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ValueListenableBuilder<ThemeMode>(
                     valueListenable: ThemeManager.themeMode,
                     builder: (context, mode, _) {
-                      // Tentukan ikon berdasarkan mode saat ini
                       IconData icon = Icons.dark_mode;
                       if (mode == ThemeMode.dark) {
                         icon = Icons.light_mode;
@@ -283,21 +278,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: _openEditScreen,
                 )),
                 
-              // Spasi untuk FAB
-              const SizedBox(height: 80),
+              // Spasi lebih untuk FAB yang melayang
+              const SizedBox(height: 100), 
             ],
           ),
         ),
-      ),
-      
-      // ── FAB ──
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openAddScreen,
-        backgroundColor: const Color(0xFF10B981),
-        foregroundColor: Colors.white,
-        elevation: 4,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 28),
       ),
     );
   }

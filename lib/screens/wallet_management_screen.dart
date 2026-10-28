@@ -130,6 +130,9 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      // PERBAIKAN: Mencegah FAB ikut naik/turun melompat saat keyboard dialog muncul
+      resizeToAvoidBottomInset: false, 
+      
       appBar: AppBar(
         title: const Text('Kelola Tabungan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
@@ -147,13 +150,11 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
-                    // MENGGUNAKAN COLUMN AGAR TINGGI PRESISI
                     child: Column(
-                      mainAxisSize: MainAxisSize.min, // Penting: agar tinggi pas dengan isi
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         for (int i = 0; i < _wallets.length; i++) ...[
                           _buildWalletTile(_wallets[i], isDark),
-                          // Tampilkan divider jika bukan item terakhir
                           if (i < _wallets.length - 1)
                             Divider(
                               height: 1,
@@ -164,7 +165,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 80), // Jarak aman untuk FAB
+                const SizedBox(height: 80),
               ],
             ),
       floatingActionButton: FloatingActionButton.extended(
@@ -182,7 +183,6 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
     );
   }
 
-  // Widget dipisah agar kode build lebih bersih
   Widget _buildWalletTile(Wallet w, bool isDark) {
     final isActive = AppState.activeWallet.value?.id == w.id;
     

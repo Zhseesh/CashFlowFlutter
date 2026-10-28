@@ -4,11 +4,16 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'data/cashflow_repository.dart';
 import 'screens/main_shell.dart';
 import 'utils/app_state.dart';
+import 'utils/app_theme.dart';
+import 'utils/theme_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
   
+  // Load preferensi tema
+  await ThemeManager.load();
+
   // Inisialisasi Tabungan Pertama
   final repo = CashFlowRepository();
   final wallets = await repo.getWallets();
@@ -16,10 +21,12 @@ void main() async {
     AppState.activeWallet.value = wallets.first;
   }
 
+  // Set status bar transparan
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
+    statusBarIconBrightness: Brightness.dark, 
   ));
+  
   runApp(const CashFlowApp());
 }
 
@@ -28,52 +35,19 @@ class CashFlowApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Cash Flow',
-      debugShowCheckedModeBanner: false,
-      theme: _buildTheme(Brightness.light),
-      darkTheme: _buildTheme(Brightness.dark),
-      themeMode: ThemeMode.system,
-      home: const MainShell(),
-    );
-  }
-
-  ThemeData _buildTheme(Brightness brightness) {
-    final isDark = brightness == Brightness.dark;
-    final base = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF10B981),
-      brightness: brightness,
-    );
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: base.copyWith(
-        primary: const Color(0xFF10B981),
-        secondary: const Color(0xFFE11D48),
-      ),
-      scaffoldBackgroundColor:
-          isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-      appBarTheme: AppBarTheme(
-        backgroundColor:
-            isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
-        elevation: 0,
-        centerTitle: false,
-      ),
-      cardTheme: CardThemeData(
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
+    // Mendengarkan perubahan tema secara global
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeManager.themeMode,
+      builder: (context, mode, _) {
+        return MaterialApp(
+          title: 'Cash Flow',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,       // Panggil tema Light
+          darkTheme: AppTheme.dark,    // Panggil tema Dark
+          themeMode: mode,             // Terapkan mode (System/Light/Dark)
+          home: const MainShell(),
+        );
+      },
     );
   }
 }

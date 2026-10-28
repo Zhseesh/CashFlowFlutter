@@ -18,21 +18,14 @@ class TransactionTile extends StatelessWidget {
     final color = isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     final sign = isIncome ? '+' : '-';
     final icon = isIncome ? Icons.south_west : Icons.north_east;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      // 1. Ubah margin: Hapus horizontal 16 karena ListView sudah memberi padding 16
-      // Sisakan bottom margin untuk jarak antar item
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03), // Shadow lebih halus
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
       ),
       child: Material(
         color: Colors.transparent,
@@ -40,11 +33,9 @@ class TransactionTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: onTap != null ? () => onTap!(transaction) : null,
           child: Padding(
-            // 2. Sesuaikan padding: horizontal 16, vertical 12
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                // 3. Perkecil ukuran ikon container
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -60,11 +51,7 @@ class TransactionTile extends StatelessWidget {
                     children: [
                       Text(
                         transaction.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15, // Sedikit lebih besar dari sebelumnya
-                          letterSpacing: -0.2,
-                        ),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -73,14 +60,8 @@ class TransactionTile extends StatelessWidget {
                         children: [
                           Flexible(
                             child: Text(
-                              '${transaction.categoryName} • '
-                              '${transaction.date.day}/'
-                              '${transaction.date.month}/'
-                              '${transaction.date.year}',
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 11,
-                              ),
+                              '${transaction.categoryName} • ${transaction.date.day}/${transaction.date.month}/${transaction.date.year}',
+                              style: TextStyle(color: isDark ? Colors.grey.shade500 : Colors.grey.shade600, fontSize: 11),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -97,19 +78,11 @@ class TransactionTile extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   '$sign${formatCurrency(transaction.amount)}',
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 if (onTap != null) ...[
                   const SizedBox(width: 4),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 18,
-                    color: Colors.grey.shade400,
-                  ),
+                  Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey.shade400),
                 ],
               ],
             ),

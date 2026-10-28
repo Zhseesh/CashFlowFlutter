@@ -1,8 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../data/cashflow_repository.dart';
-import '../utils/formatters.dart';
 import '../utils/app_state.dart';
+import '../utils/formatters.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -23,13 +23,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   void initState() {
     super.initState();
-    AppState.activeWallet.addListener(_load); // <-- TAMBAHKAN
+    AppState.activeWallet.addListener(_load);
     _load();
   }
 
   @override
   void dispose() {
-    AppState.activeWallet.removeListener(_load); // <-- TAMBAHKAN
+    AppState.activeWallet.removeListener(_load);
     super.dispose();
   }
 
@@ -61,53 +61,79 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final totalBreak = _breakdown.fold<double>(0, (p, e) => p + e.total);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Analisis', style: TextStyle(fontWeight: FontWeight.bold))),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
+      body: SafeArea(
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                children: [
+                  const Text('Analisis', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+
+                  // ── GRAFIK CARD ──
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Grafik Tahunan',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            Row(children: [
-                              IconButton(
-                                onPressed: () {
-                                  setState(() => _year--);
-                                  _load();
-                                },
-                                icon: const Icon(Icons.chevron_left),
+                            const Text('Grafik Tahunan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
                               ),
-                              Text('$_year', style: const TextStyle(fontWeight: FontWeight.w600)),
-                              IconButton(
-                                onPressed: () {
-                                  setState(() => _year++);
-                                  _load();
-                                },
-                                icon: const Icon(Icons.chevron_right),
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: const Icon(Icons.chevron_left, size: 16),
+                                    onPressed: () { setState(() => _year--); _load(); },
+                                  ),
+                                  Text('$_year', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: const Icon(Icons.chevron_right, size: 16),
+                                    onPressed: () { setState(() => _year++); _load(); },
+                                  ),
+                                ],
                               ),
-                            ]),
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         SizedBox(
-                          height: 220,
+                          height: 180,
                           child: BarChart(
                             BarChartData(
                               alignment: BarChartAlignment.spaceAround,
                               maxY: _maxY(),
                               barTouchData: BarTouchData(enabled: false),
-                              gridData: const FlGridData(show: true, drawVerticalLine: false),
+                              gridData: FlGridData(
+                                show: true, 
+                                drawVerticalLine: false,
+                                getDrawingHorizontalLine: (value) => FlLine(
+                                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200,
+                                  strokeWidth: 1,
+                                  dashArray: [4, 4],
+                                ),
+                              ),
                               borderData: FlBorderData(show: false),
                               titlesData: FlTitlesData(
                                 topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -117,9 +143,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                   sideTitles: SideTitles(
                                     showTitles: true,
                                     getTitlesWidget: (v, _) => Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Text(_monthNames[v.toInt() - 1],
-                                          style: const TextStyle(fontSize: 9)),
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Text(_monthNames[v.toInt() - 1], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
                                     ),
                                   ),
                                 ),
@@ -132,15 +157,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                   barsSpace: 2,
                                   barRods: [
                                     BarChartRodData(
-                                        toY: d.income,
-                                        color: const Color(0xFF10B981),
-                                        width: 5,
-                                        borderRadius: BorderRadius.circular(2)),
+                                      toY: d.income,
+                                      color: isDark ? const Color(0xFF064E3B) : const Color(0xFFA7F3D0), // Warna Light/Dark
+                                      width: 6,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
                                     BarChartRodData(
-                                        toY: d.expense,
-                                        color: const Color(0xFFE11D48),
-                                        width: 5,
-                                        borderRadius: BorderRadius.circular(2)),
+                                      toY: d.expense,
+                                      color: const Color(0xFF10B981), // Warna Utama
+                                      width: 6,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
                                   ],
                                 );
                               }),
@@ -150,70 +177,71 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
+
+                  // ── RINCIAN PENGELUARAN ──
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Pengeluaran ${_monthNames[_month - 1]} $_year',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            DropdownButton<int>(
-                              value: _month,
-                              underline: const SizedBox(),
-                              items: List.generate(
-                                  12,
-                                  (i) => DropdownMenuItem(
-                                      value: i + 1,
-                                      child: Text(_monthNames[i],
-                                          style: const TextStyle(fontSize: 13)))),
-                              onChanged: (v) {
-                                setState(() => _month = v!);
-                                _load();
-                              },
+                            const Text('Rincian Pengeluaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            DropdownButtonHideUnderline(
+                              child: DropdownButton<int>(
+                                value: _month,
+                                icon: const Icon(Icons.keyboard_arrow_down, size: 16),
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+                                items: List.generate(12, (i) => DropdownMenuItem(
+                                  value: i + 1, 
+                                  child: Text(_monthNames[i]),
+                                )),
+                                onChanged: (v) { setState(() => _month = v!); _load(); },
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 16),
                         if (_breakdown.isEmpty)
                           const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Text('Belum ada pengeluaran bulan ini.',
-                                style: TextStyle(color: Colors.grey)),
+                            padding: EdgeInsets.symmetric(vertical: 24),
+                            child: Center(
+                              child: Text('Belum ada pengeluaran bulan ini.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                            ),
                           )
                         else
                           ..._breakdown.map((b) {
                             final pct = totalBreak == 0 ? 0.0 : b.total / totalBreak;
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.only(bottom: 16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(b.category,
-                                          style: const TextStyle(
-                                              fontSize: 13, fontWeight: FontWeight.w500)),
-                                      Text(
-                                        '${(pct * 100).toStringAsFixed(1)}% • ${formatCurrency(b.total)}',
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
+                                      Text(b.category, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                      Text('${(pct * 100).toStringAsFixed(1)}%', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
                                     ],
                                   ),
-                                  const SizedBox(height: 4),
-                                  LinearProgressIndicator(
-                                    value: pct,
-                                    minHeight: 8,
-                                    backgroundColor: Colors.grey.withValues(alpha:0.15),
-                                    color: const Color(0xFFE11D48),
+                                  const SizedBox(height: 6),
+                                  ClipRRect(
                                     borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value: pct,
+                                      minHeight: 6,
+                                      backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade100,
+                                      color: const Color(0xFF10B981),
+                                    ),
                                   ),
+                                  const SizedBox(height: 4),
+                                  Text(formatCurrency(b.total), style: const TextStyle(fontSize: 11, color: Colors.grey)),
                                 ],
                               ),
                             );
@@ -221,9 +249,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       ],
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+      ),
     );
   }
 }

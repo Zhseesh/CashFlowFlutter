@@ -86,17 +86,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final bytes = await file.readAsBytes();
     final fileName = file.path.split('/').last;
 
-    // PERUBAHAN 1: Tipe data Uri? (bukan String?)
-    // PERUBAHAN 2: Parameter type & allowedExtensions dihapus
     Uri? outputFile = await FilePicker.saveFile(
       dialogTitle: 'Simpan Laporan PDF',
       fileName: fileName,
       bytes: bytes,
     );
 
-    if (outputFile != null) {
-      _toast('Berhasil disimpan!');
-    }
+    if (outputFile != null) _toast('Berhasil disimpan!');
   }
 
   Future<void> _exportCsv() async {
@@ -112,16 +108,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final bytes = await file.readAsBytes();
     final fileName = file.path.split('/').last;
 
-    // PERUBAHAN: Uri? dan hapus parameter deprecated
     Uri? outputFile = await FilePicker.saveFile(
       dialogTitle: 'Simpan Data CSV',
       fileName: fileName,
       bytes: bytes,
     );
 
-    if (outputFile != null) {
-      _toast('Berhasil disimpan!');
-    }
+    if (outputFile != null) _toast('Berhasil disimpan!');
   }
 
   Future<void> _backupJson() async {
@@ -135,16 +128,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
     
     final fileName = 'CashFlow_Backup_${DateTime.now().millisecondsSinceEpoch}.json';
     
-    // PERUBAHAN: Uri? dan hapus parameter deprecated
     Uri? outputFile = await FilePicker.saveFile(
       dialogTitle: 'Simpan Cadangan JSON',
       fileName: fileName,
       bytes: Uint8List.fromList(utf8.encode(jsonString)),
     );
 
-    if (outputFile != null) {
-      _toast('Berhasil disimpan!');
-    }
+    if (outputFile != null) _toast('Berhasil disimpan!');
   }
 
   Future<void> _importJson() async {
@@ -250,74 +240,203 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Laporan & Data', style: TextStyle(fontWeight: FontWeight.bold))),
-      body: Stack(children: [
-        ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            ValueListenableBuilder(
-              valueListenable: AppState.activeWallet,
-              builder: (context, wallet, _) {
-                return Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
+      body: SafeArea(
+        child: Stack(children: [
+          ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            children: [
+              const Text('Laporan & Data', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+
+              // Active Wallet Info
+              ValueListenableBuilder(
+                valueListenable: AppState.activeWallet,
+                builder: (context, wallet, _) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF064E3B).withValues(alpha: 0.4) : const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: isDark ? const Color(0xFF10B981).withValues(alpha: 0.2) : const Color(0xFFA7F3D0)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.account_box_outlined, size: 20, color: Color(0xFF10B981)),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Laporan untuk: ',
+                          style: TextStyle(fontSize: 13, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700),
+                        ),
+                        Text(
+                          wallet?.name ?? "-",
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF10B981)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+
+              // Initial Balance Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                      ),
+                      child: const Icon(Icons.savings_outlined, size: 20, color: Colors.grey),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Saldo Awal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(formatCurrency(_saldoAwal), style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined, size: 20, color: Colors.grey),
+                      onPressed: _editSaldo,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Section: Ekspor
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                child: Text('EKSPOR DOKUMEN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
+              ),
+              Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Column(
                     children: [
-                      Icon(Icons.folder_shared_outlined, size: 20, color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Laporan untuk: ${wallet?.name ?? "-"}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      _buildFlushItem(
+                        icon: Icons.picture_as_pdf,
+                        title: 'Ekspor PDF Bulanan',
+                        subtitle: 'Laporan lengkap dengan grafik & mutasi',
+                        onTap: _exportPdf,
+                        isDark: isDark,
+                        showDivider: true,
+                      ),
+                      _buildFlushItem(
+                        icon: Icons.table_chart,
+                        title: 'Ekspor CSV',
+                        subtitle: 'Spreadsheet siap Excel/Sheets',
+                        onTap: _exportCsv,
+                        isDark: isDark,
+                        showDivider: false,
                       ),
                     ],
                   ),
-                );
-              },
-            ),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.savings_outlined),
-                title: const Text('Saldo Awal'),
-                subtitle: Text(formatCurrency(_saldoAwal)),
-                trailing: const Icon(Icons.edit),
-                onTap: _editSaldo,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            _section('Ekspor Dokumen'),
-            _item(Icons.picture_as_pdf, 'Ekspor PDF Bulanan', 'Laporan lengkap dengan grafik & mutasi', _exportPdf),
-            _item(Icons.table_chart, 'Ekspor CSV', 'Spreadsheet siap Excel/Sheets', _exportCsv),
-            const SizedBox(height: 12),
-            _section('Cadangan Data'),
-            _item(Icons.backup, 'Cadangkan (JSON)', 'Simpan & bagikan seluruh data', _backupJson),
-            _item(Icons.restore, 'Pulihkan (JSON)', 'Impor dari berkas cadangan', _importJson),
-          ],
-        ),
-        if (_busy)
-          Container(color: Colors.black26, child: const Center(child: CircularProgressIndicator())),
-      ]),
+
+              // Section: Backup
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                child: Text('CADANGAN DATA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Column(
+                    children: [
+                      _buildFlushItem(
+                        icon: Icons.cloud_upload_outlined,
+                        title: 'Cadangkan (JSON)',
+                        subtitle: 'Simpan & bagikan seluruh data',
+                        onTap: _backupJson,
+                        isDark: isDark,
+                        showDivider: true,
+                      ),
+                      _buildFlushItem(
+                        icon: Icons.restore,
+                        title: 'Pulihkan (JSON)',
+                        subtitle: 'Impor dari berkas cadangan',
+                        onTap: _importJson,
+                        isDark: isDark,
+                        showDivider: false,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_busy)
+            Container(color: Colors.black26, child: const Center(child: CircularProgressIndicator())),
+        ]),
+      ),
     );
   }
 
-  Widget _section(String s) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: Text(s, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
-      );
-
-  Widget _item(IconData icon, String title, String sub, Future<void> Function() onTap) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(icon),
-        title: Text(title),
-        subtitle: Text(sub, style: const TextStyle(fontSize: 12)),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => _run(onTap),
+  Widget _buildFlushItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required bool isDark,
+    required bool showDivider,
+  }) {
+    return InkWell(
+      onTap: () => _run(() async => onTap()),
+      child: Container(
+        decoration: BoxDecoration(
+          border: showDivider 
+              ? Border(bottom: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100)) 
+              : null,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 32,
+              child: Icon(icon, size: 22, color: Colors.grey),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade400),
+          ],
+        ),
       ),
     );
   }

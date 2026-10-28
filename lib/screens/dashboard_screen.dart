@@ -4,6 +4,7 @@ import '../models/transaction.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
+import '../utils/theme_manager.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
 import 'transaction_form_screen.dart';
@@ -18,7 +19,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final _repo = CashFlowRepository();
   
-  // State Data
   double _balance = 0;
   double _incomeMonth = 0;
   double _expenseMonth = 0;
@@ -47,7 +47,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _onWalletChanged() {
-    // Reset filter saat ganti tabungan
     _searchCtrl.clear();
     setState(() => _dateRange = null);
     _load();
@@ -59,7 +58,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     setState(() => _loading = true);
     
-    // Data Ringkasan Bulan Ini
     final now = DateTime.now();
     final startMonth = DateTime(now.year, now.month, 1);
     final endMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
@@ -68,7 +66,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final inc = await _repo.totalByType('INCOME', walletId: walletId, from: startMonth, to: endMonth);
     final exp = await _repo.totalByType('EXPENSE', walletId: walletId, from: startMonth, to: endMonth);
 
-    // Data Transaksi (dengan filter)
     final txs = await _repo.getTransactions(
       walletId: walletId,
       from: _dateRange?.start,
@@ -76,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? DateTime(_dateRange!.end.year, _dateRange!.end.month, _dateRange!.end.day, 23, 59, 59)
           : null,
       searchQuery: _searchCtrl.text,
-      limit: _isFiltering ? 10000 : 5, // Tampilkan semua jika filter aktif, jika tidak 5 terbaru
+      limit: _isFiltering ? 10000 : 5, 
     );
     
     if (!mounted) return;
@@ -90,24 +87,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _openAddScreen() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const TransactionFormScreen()),
-    );
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionFormScreen()));
   }
 
   void _openEditScreen(TransactionRecord tx) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => TransactionFormScreen(editing: tx)),
-    );
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => TransactionFormScreen(editing: tx)));
   }
 
   void _openWalletManagement() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const WalletManagementScreen()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletManagementScreen()));
   }
 
   Future<void> _pickDateRange() async {
@@ -117,12 +105,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(now.year + 1, 12, 31),
       initialDateRange: _dateRange,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context),
-          child: child!,
-        );
-      },
     );
     if (picked != null) {
       setState(() => _dateRange = picked);
@@ -130,163 +112,192 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _clearFilters() {
-    _searchCtrl.clear();
-    setState(() => _dateRange = null);
-    _load();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(
-        title: InkWell(
-          onTap: _openWalletManagement,
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ValueListenableBuilder(
-                  valueListenable: AppState.activeWallet,
-                  builder: (context, wallet, _) {
-                    return Text(
-                      wallet?.name ?? 'Pilih Tabungan',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    );
-                  },
-                ),
-                const SizedBox(width: 4),
-                const Icon(Icons.arrow_drop_down, size: 20),
-              ],
-            ),
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddScreen,
-        icon: const Icon(Icons.add),
-        label: const Text('Transaksi'),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-          children: [
-            // 1. KARTU SALDO
-            BalanceCard(balance: _balance, income: _incomeMonth, expense: _expenseMonth),
-            
-            const SizedBox(height: 24),
-            
-            // 2. SEARCH BAR & FILTER
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchCtrl,
-                    decoration: InputDecoration(
-                      hintText: 'Cari transaksi...',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _searchCtrl.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchCtrl.clear();
-                                _load();
-                              },
-                            )
-                          : null,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                    ),
-                    onSubmitted: (_) => _load(),
-                    textInputAction: TextInputAction.search,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filledTonal(
-                  onPressed: _pickDateRange,
-                  icon: const Icon(Icons.calendar_month),
-                  tooltip: 'Filter Tanggal',
-                ),
-              ],
-            ),
-            
-            // Tampilkan info filter jika aktif
-            if (_isFiltering)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    if (_dateRange != null)
-                      Chip(
-                        label: Text(
-                          '${formatDate(_dateRange!.start)} - ${formatDate(_dateRange!.end)}',
-                          style: const TextStyle(fontSize: 12),
+      // Tidak menggunakan AppBar standar, kita buat custom di dalam body
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _load,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            children: [
+              // ── CUSTOM HEADER ──
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InkWell(
+                    onTap: _openWalletManagement,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Row(
+                      children: [
+                        ValueListenableBuilder(
+                          valueListenable: AppState.activeWallet,
+                          builder: (context, wallet, _) {
+                            return Text(
+                              wallet?.name ?? 'Pilih Tabungan',
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            );
+                          },
                         ),
-                        onDeleted: () {
-                          setState(() => _dateRange = null);
-                          _load();
-                        },
-                      ),
-                    TextButton.icon(
-                      onPressed: _clearFilters,
-                      icon: const Icon(Icons.refresh, size: 16),
-                      label: const Text('Reset Filter', style: TextStyle(fontSize: 12)),
-                    )
-                  ],
+                        const SizedBox(width: 4),
+                        const Icon(Icons.keyboard_arrow_down, size: 24, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                  
+                  // Tombol Toggle Tema
+                  ValueListenableBuilder<ThemeMode>(
+                    valueListenable: ThemeManager.themeMode,
+                    builder: (context, mode, _) {
+                      // Tentukan ikon berdasarkan mode saat ini
+                      IconData icon = Icons.dark_mode;
+                      if (mode == ThemeMode.dark) {
+                        icon = Icons.light_mode;
+                      } else if (mode == ThemeMode.system) {
+                        icon = MediaQuery.of(context).platformBrightness == Brightness.dark 
+                            ? Icons.light_mode 
+                            : Icons.dark_mode;
+                      }
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
+                        ),
+                        child: IconButton(
+                          icon: Icon(icon, size: 20),
+                          onPressed: () => ThemeManager.toggle(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // ── KARTU SALDO ──
+              BalanceCard(balance: _balance, income: _incomeMonth, expense: _expenseMonth),
+              const SizedBox(height: 24),
+              
+              // ── SEARCH BAR ──
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                ),
+                child: TextField(
+                  controller: _searchCtrl,
+                  onSubmitted: (_) => _load(),
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: 'Cari transaksi...',
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_month, size: 20),
+                      onPressed: _pickDateRange,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
                 ),
               ),
 
-            const SizedBox(height: 20),
-
-            // 3. LIST TRANSAKSI
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _isFiltering ? 'Hasil Pencarian' : 'Transaksi Terbaru',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                if (_isFiltering)
-                  Text(
-                    '${_transactions.length} ditemukan',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              // Tampilkan info filter jika aktif
+              if (_isFiltering)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Row(
+                    children: [
+                      if (_dateRange != null)
+                        Chip(
+                          label: Text('${formatDate(_dateRange!.start)} - ${formatDate(_dateRange!.end)}', style: const TextStyle(fontSize: 11)),
+                          onDeleted: () { setState(() => _dateRange = null); _load(); },
+                        ),
+                      TextButton(
+                        onPressed: () { _searchCtrl.clear(); setState(() => _dateRange = null); _load(); },
+                        child: const Text('Reset', style: TextStyle(fontSize: 12)),
+                      )
+                    ],
                   ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            
-            if (_loading)
-              const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
-            else if (_transactions.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                 ),
-                child: Column(
-                  children: [
-                    Icon(_isFiltering ? Icons.search_off : Icons.receipt_long_outlined, size: 48, color: Colors.grey),
-                    const SizedBox(height: 8),
-                    Text(
-                      _isFiltering ? 'Transaksi tidak ditemukan' : 'Belum ada transaksi',
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              )
-            else
-              ..._transactions.map((t) => TransactionTile(
-                transaction: t,
-                onTap: _openEditScreen,
-              )),
-          ],
+
+              const SizedBox(height: 24),
+
+              // ── LIST TRANSAKSI ──
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _isFiltering ? 'Hasil Pencarian' : 'Transaksi Terbaru',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  if (_isFiltering)
+                    Text('${_transactions.length} ditemukan', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              if (_loading)
+                const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
+              else if (_transactions.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(_isFiltering ? Icons.search_off : Icons.receipt_long_outlined, size: 32, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _isFiltering ? 'Transaksi tidak ditemukan' : 'Belum ada transaksi',
+                        style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Catat pengeluaran pertamamu hari ini',
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ..._transactions.map((t) => TransactionTile(
+                  transaction: t,
+                  onTap: _openEditScreen,
+                )),
+                
+              // Spasi untuk FAB
+              const SizedBox(height: 80),
+            ],
+          ),
         ),
+      ),
+      
+      // ── FAB ──
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAddScreen,
+        backgroundColor: const Color(0xFF10B981),
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add, size: 28),
       ),
     );
   }

@@ -1,7 +1,7 @@
 name: cashflow
 description: Aplikasi pengelola arus kas & analisis keuangan
 publish_to: 'none'
-version: 1.0.3+4
+version: 1.0.4+5
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -19,6 +19,8 @@ dependencies:
   file_picker: ^13.3.0
   fl_chart: ^0.68.0
   open_filex: ^4.6.0
+  google_fonts: ^6.2.1
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:

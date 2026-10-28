@@ -21,7 +21,6 @@ class CashFlowRepository {
 
   Future<void> deleteWallet(int id) async {
     final db = await _helper.db;
-    // ON DELETE CASCADE di tabel transaksi akan menghapus transaksinya juga
     await db.delete('wallets', where: 'id = ?', whereArgs: [id]);
   }
 
@@ -30,7 +29,7 @@ class CashFlowRepository {
     await db.update('wallets', {'name': newName}, where: 'id = ?', whereArgs: [id]);
   }
 
-  // ── TRANSACTION METHODS ─────────────────────────────────
+  // ── CATEGORY METHODS (CRUD BARU) ────────────────────────
   Future<List<Category>> getCategories({String? type}) async {
     final db = await _helper.db;
     final rows = await db.query(
@@ -42,6 +41,23 @@ class CashFlowRepository {
     return rows.map(Category.fromMap).toList();
   }
 
+  Future<int> insertCategory(Category c) async {
+    final db = await _helper.db;
+    return db.insert('categories', c.toMap());
+  }
+
+  Future<void> updateCategory(Category c) async {
+    final db = await _helper.db;
+    await db.update('categories', c.toMap(), where: 'id = ?', whereArgs: [c.id]);
+  }
+
+  Future<void> deleteCategory(int id) async {
+    final db = await _helper.db;
+    // Data transaksi lama tetap aman karena kita menyimpan category_name di tabel transaksi
+    await db.delete('categories', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ── TRANSACTION METHODS ─────────────────────────────────
   Future<List<TransactionRecord>> getTransactions({
     required int walletId,
     DateTime? from,
@@ -61,7 +77,7 @@ class CashFlowRepository {
       args.add('%$searchQuery%');
       args.add('%$searchQuery%');
     }
-  
+
     final rows = await db.query(
       'transactions',
       where: where.join(' AND '),
@@ -90,7 +106,7 @@ class CashFlowRepository {
   // ── SETTINGS / SALDO ────────────────────────────────────
   Future<double> getSaldoAwal(int walletId) async {
     final db = await _helper.db;
-    final key = 'saldo_awal_$walletId'; // Scope saldo per wallet
+    final key = 'saldo_awal_$walletId'; 
     final rows = await db.query('settings', where: 'key = ?', whereArgs: [key]);
     if (rows.isEmpty) return 0;
     return double.tryParse(rows.first['value'] as String) ?? 0;
@@ -106,7 +122,7 @@ class CashFlowRepository {
     );
   }
 
-  // ── AGGREGATIONS (harus spesifik wallet) ────────────────
+  // ── AGGREGATIONS ────────────────────────────────────────
   Future<double> totalByType(String type, {required int walletId, DateTime? from, DateTime? to}) async {
     final db = await _helper.db;
     final where = <String>['type = ?', 'wallet_id = ?'];
@@ -176,7 +192,7 @@ class CashFlowRepository {
     await db.transaction((txn) async {
       for (final t in list) {
         final map = t.toMap()..remove('id');
-        map['wallet_id'] = walletId; // Paksa masuk ke wallet yang dipilih
+        map['wallet_id'] = walletId;
         await txn.insert('transactions', map);
       }
     });

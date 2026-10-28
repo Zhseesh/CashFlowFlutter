@@ -9,4 +9,7 @@ class AppState {
   
   // Getter pintas untuk mengambil ID
   static int? get activeWalletId => activeWallet.value?.id;
+
+  // Status Sembunyikan Saldo (Default: Tampil)
+  static final ValueNotifier<bool> hideBalance = ValueNotifier(false);
 }

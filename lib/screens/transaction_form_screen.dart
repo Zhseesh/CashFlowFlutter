@@ -10,6 +10,7 @@ import '../services/attachment_service.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
+import 'category_management_screen.dart'; // IMPORT BARU
 
 class TransactionFormScreen extends StatefulWidget {
   final TransactionRecord? editing;
@@ -411,7 +412,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
               ),
               child: Stack(
                 children: [
-                  // 1. Background Geser (AnimatedAlign)
                   AnimatedAlign(
                     alignment: _type == 'INCOME' ? Alignment.centerLeft : Alignment.centerRight,
                     duration: const Duration(milliseconds: 250),
@@ -430,8 +430,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                       ),
                     ),
                   ),
-                  
-                  // 2. Teks & Ikon Tombol
                   Row(
                     children: [
                       Expanded(
@@ -523,15 +521,30 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             _buildHairlineInput(
               icon: Icons.category_outlined,
               label: 'Kategori',
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<Category>(
-                  value: _category,
-                  isExpanded: true,
-                  icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.grey),
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: isDark ? Colors.white : Colors.black87),
-                  onChanged: _saving ? null : (c) => setState(() => _category = c),
-                  items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
-                ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<Category>(
+                        value: _category,
+                        isExpanded: true,
+                        icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.grey),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: isDark ? Colors.white : Colors.black87),
+                        onChanged: _saving ? null : (c) => setState(() => _category = c),
+                        items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
+                      ),
+                    ),
+                  ),
+                  // TOMBOL KELOLA KATEGORI BARU
+                  IconButton(
+                    tooltip: 'Kelola Kategori',
+                    icon: const Icon(Icons.tune, size: 20, color: Color(0xFF10B981)),
+                    onPressed: _saving ? null : () async {
+                      await Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryManagementScreen()));
+                      _loadCategories(); // Refresh dropdown setelah kembali dari kelola kategori
+                    },
+                  ),
+                ],
               ),
             ),
 

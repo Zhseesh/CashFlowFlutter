@@ -76,7 +76,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
     }
     
     _load();
-    AppEvents.notify(); // Beri tahu form transaksi agar me-refresh dropdown
+    AppEvents.notify();
   }
 
   Future<void> _deleteCategory(Category c) async {
@@ -156,6 +156,9 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      // PERBAIKAN: Mencegah FAB memantul saat keyboard dialog muncul
+      resizeToAvoidBottomInset: false,
+      
       appBar: AppBar(
         title: const Text('Kategori Kustom', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,

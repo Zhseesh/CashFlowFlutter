@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart' show ConflictAlgorithm;
+import '../models/budget.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../models/wallet.dart';
@@ -29,7 +30,44 @@ class CashFlowRepository {
     await db.update('wallets', {'name': newName}, where: 'id = ?', whereArgs: [id]);
   }
 
-  // ── CATEGORY METHODS (CRUD BARU) ────────────────────────
+  // ── BUDGET METHODS ──────────────────────────────────────
+  Future<List<Budget>> getBudgets(int walletId) async {
+    final db = await _helper.db;
+    final rows = await db.query('budgets', where: 'wallet_id = ?', whereArgs: [walletId]);
+    return rows.map(Budget.fromMap).toList();
+  }
+
+  Future<void> setBudget(Budget b) async {
+    final db = await _helper.db;
+    await db.insert(
+      'budgets',
+      b.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteBudget(int id) async {
+    final db = await _helper.db;
+    await db.delete('budgets', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<double> getSpentForCategory({
+    required int walletId,
+    required String categoryName,
+    required int month,
+    required int year,
+  }) async {
+    final db = await _helper.db;
+    final start = DateTime(year, month, 1).millisecondsSinceEpoch;
+    final end = DateTime(year, month + 1, 0, 23, 59, 59).millisecondsSinceEpoch;
+    final result = await db.rawQuery(
+      'SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE wallet_id = ? AND category_name = ? AND type = "EXPENSE" AND date_millis >= ? AND date_millis <= ?',
+      [walletId, categoryName, start, end],
+    );
+    return (result.first['total'] as num?)?.toDouble() ?? 0;
+  }
+
+  // ── CATEGORY METHODS ────────────────────────────────────
   Future<List<Category>> getCategories({String? type}) async {
     final db = await _helper.db;
     final rows = await db.query(
@@ -53,7 +91,6 @@ class CashFlowRepository {
 
   Future<void> deleteCategory(int id) async {
     final db = await _helper.db;
-    // Data transaksi lama tetap aman karena kita menyimpan category_name di tabel transaksi
     await db.delete('categories', where: 'id = ?', whereArgs: [id]);
   }
 

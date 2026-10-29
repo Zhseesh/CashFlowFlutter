@@ -4,11 +4,11 @@ import '../models/transaction.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
-import '../utils/theme_manager.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
 import 'transaction_form_screen.dart';
 import 'wallet_management_screen.dart';
+import 'settings_screen.dart'; // IMPORT BARU
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,7 +25,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<TransactionRecord> _transactions = [];
   bool _loading = true;
 
-  // State Filter & Search
   final _searchCtrl = TextEditingController();
   DateTimeRange? _dateRange;
   bool get _isFiltering => _searchCtrl.text.isNotEmpty || _dateRange != null;
@@ -94,6 +93,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletManagementScreen()));
   }
 
+  void _openSettings() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+  }
+
   Future<void> _pickDateRange() async {
     final now = DateTime.now();
     final picked = await showDateRangePicker(
@@ -113,7 +116,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      // Tidak menggunakan AppBar standar, kita buat custom di dalam body
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _load,
@@ -144,41 +146,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   
-                  // Tombol Toggle Tema
-                  ValueListenableBuilder<ThemeMode>(
-                    valueListenable: ThemeManager.themeMode,
-                    builder: (context, mode, _) {
-                      IconData icon = Icons.dark_mode;
-                      if (mode == ThemeMode.dark) {
-                        icon = Icons.light_mode;
-                      } else if (mode == ThemeMode.system) {
-                        icon = MediaQuery.of(context).platformBrightness == Brightness.dark 
-                            ? Icons.light_mode 
-                            : Icons.dark_mode;
-                      }
-
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
-                        ),
-                        child: IconButton(
-                          icon: Icon(icon, size: 20),
-                          onPressed: () => ThemeManager.toggle(),
-                        ),
-                      );
-                    },
+                  // Tombol Pengaturan
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.settings_outlined, size: 20),
+                      onPressed: _openSettings,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
 
-              // ── KARTU SALDO ──
               BalanceCard(balance: _balance, income: _incomeMonth, expense: _expenseMonth),
               const SizedBox(height: 24),
               
-              // ── SEARCH BAR ──
               Container(
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
@@ -204,7 +190,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
 
-              // Tampilkan info filter jika aktif
               if (_isFiltering)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
@@ -225,7 +210,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               const SizedBox(height: 24),
 
-              // ── LIST TRANSAKSI ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -278,7 +262,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: _openEditScreen,
                 )),
                 
-              // Spasi lebih untuk FAB yang melayang
               const SizedBox(height: 100), 
             ],
           ),

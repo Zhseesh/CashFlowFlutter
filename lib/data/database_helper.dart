@@ -6,7 +6,7 @@ class DatabaseHelper {
   DatabaseHelper._();
   static final DatabaseHelper instance = DatabaseHelper._();
   static const _dbName = 'cashflow.db';
-  static const _dbVersion = 4; // Naik ke v4
+  static const _dbVersion = 5; 
   Database? _db;
 
   Future<Database> get db async {
@@ -65,6 +65,18 @@ class DatabaseHelper {
       )
     ''');
 
+    // Tabel Budgets Baru
+    batch.execute('''
+      CREATE TABLE budgets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wallet_id INTEGER NOT NULL,
+        category_name TEXT NOT NULL,
+        limit_amount REAL NOT NULL,
+        FOREIGN KEY(wallet_id) REFERENCES wallets(id) ON DELETE CASCADE,
+        UNIQUE(wallet_id, category_name)
+      )
+    ''');
+
     batch.execute('CREATE INDEX idx_tx_date ON transactions(date_millis)');
     batch.execute('CREATE INDEX idx_tx_wallet ON transactions(wallet_id)');
     
@@ -108,16 +120,25 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX idx_tx_wallet ON transactions(wallet_id)');
     }
     if (oldVersion < 4) {
-      // Migrasi ke multi-attachment
       await db.execute('ALTER TABLE transactions ADD COLUMN attachment_paths TEXT');
-      
       final oldData = await db.query('transactions', where: 'attachment_path IS NOT NULL');
       for (var row in oldData) {
         final oldPath = row['attachment_path'] as String;
         final jsonStr = '["$oldPath"]'; 
-        await db.update('transactions', {'attachment_paths': jsonStr}, 
-            where: 'id = ?', whereArgs: [row['id']]);
+        await db.update('transactions', {'attachment_paths': jsonStr}, where: 'id = ?', whereArgs: [row['id']]);
       }
+    }
+    if (oldVersion < 5) {
+      await db.execute('''
+        CREATE TABLE budgets (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          wallet_id INTEGER NOT NULL,
+          category_name TEXT NOT NULL,
+          limit_amount REAL NOT NULL,
+          FOREIGN KEY(wallet_id) REFERENCES wallets(id) ON DELETE CASCADE,
+          UNIQUE(wallet_id, category_name)
+        )
+      ''');
     }
   }
 }

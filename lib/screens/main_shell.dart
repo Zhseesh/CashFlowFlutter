@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'dashboard_screen.dart';
 import 'analytics_screen.dart';
 import 'reports_screen.dart';
@@ -15,7 +16,6 @@ class _MainShellState extends State<MainShell> {
   int _index = 0;
   final _screens = const [DashboardScreen(), AnalyticsScreen(), ReportsScreen()];
 
-  // Fungsi untuk membuka form dari luar Dashboard
   void _openAddScreen() {
     Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionFormScreen()));
   }
@@ -23,12 +23,12 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      extendBody: true, // Agar transparan tembus ke bawah
+      extendBody: true, 
       body: IndexedStack(index: _index, children: _screens),
       
-      // FAB Dipindah ke sini agar tidak tertutup bottom nav
       floatingActionButton: _index == 0 
           ? FloatingActionButton(
               onPressed: _openAddScreen,
@@ -61,21 +61,21 @@ class _MainShellState extends State<MainShell> {
               selectedIndex: _index,
               onDestinationSelected: (i) => setState(() => _index = i),
               indicatorColor: isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5),
-              destinations: const [
+              destinations: [
                 NavigationDestination(
-                  icon: Icon(Icons.grid_view_rounded, color: Colors.grey),
-                  selectedIcon: Icon(Icons.grid_view_rounded, color: Color(0xFF10B981)),
-                  label: 'Dasbor',
+                  icon: const Icon(Icons.grid_view_rounded, color: Colors.grey),
+                  selectedIcon: const Icon(Icons.grid_view_rounded, color: Color(0xFF10B981)),
+                  label: l10n.translate('dashboard'), // <-- DINAMIS
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.insert_chart_outlined_rounded, color: Colors.grey),
-                  selectedIcon: Icon(Icons.insert_chart_rounded, color: Color(0xFF10B981)),
-                  label: 'Analisis',
+                  icon: const Icon(Icons.insert_chart_outlined_rounded, color: Colors.grey),
+                  selectedIcon: const Icon(Icons.insert_chart_rounded, color: Color(0xFF10B981)),
+                  label: l10n.translate('analytics'), // <-- DINAMIS
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.description_outlined, color: Colors.grey),
-                  selectedIcon: Icon(Icons.description, color: Color(0xFF10B981)),
-                  label: 'Laporan',
+                  icon: const Icon(Icons.description_outlined, color: Colors.grey),
+                  selectedIcon: const Icon(Icons.description, color: Color(0xFF10B981)),
+                  label: l10n.translate('reports'), // <-- DINAMIS
                 ),
               ],
             ),

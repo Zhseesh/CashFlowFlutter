@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import '../data/cashflow_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
-import '../utils/theme_manager.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
 import 'transaction_form_screen.dart';
 import 'wallet_management_screen.dart';
+import 'settings_screen.dart'; 
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,7 +26,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<TransactionRecord> _transactions = [];
   bool _loading = true;
 
-  // State Filter & Search
   final _searchCtrl = TextEditingController();
   DateTimeRange? _dateRange;
   bool get _isFiltering => _searchCtrl.text.isNotEmpty || _dateRange != null;
@@ -94,6 +94,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletManagementScreen()));
   }
 
+  void _openSettings() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+  }
+
   Future<void> _pickDateRange() async {
     final now = DateTime.now();
     final picked = await showDateRangePicker(
@@ -111,16 +115,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      // Tidak menggunakan AppBar standar, kita buat custom di dalam body
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _load,
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             children: [
-              // ── CUSTOM HEADER ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -133,7 +136,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           valueListenable: AppState.activeWallet,
                           builder: (context, wallet, _) {
                             return Text(
-                              wallet?.name ?? 'Pilih Tabungan',
+                              wallet?.name ?? l10n.translate('main_wallet'), // <-- DINAMIS
                               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                             );
                           },
@@ -144,41 +147,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   
-                  // Tombol Toggle Tema
-                  ValueListenableBuilder<ThemeMode>(
-                    valueListenable: ThemeManager.themeMode,
-                    builder: (context, mode, _) {
-                      IconData icon = Icons.dark_mode;
-                      if (mode == ThemeMode.dark) {
-                        icon = Icons.light_mode;
-                      } else if (mode == ThemeMode.system) {
-                        icon = MediaQuery.of(context).platformBrightness == Brightness.dark 
-                            ? Icons.light_mode 
-                            : Icons.dark_mode;
-                      }
-
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
-                        ),
-                        child: IconButton(
-                          icon: Icon(icon, size: 20),
-                          onPressed: () => ThemeManager.toggle(),
-                        ),
-                      );
-                    },
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.settings_outlined, size: 20),
+                      onPressed: _openSettings,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
 
-              // ── KARTU SALDO ──
               BalanceCard(balance: _balance, income: _incomeMonth, expense: _expenseMonth),
               const SizedBox(height: 24),
               
-              // ── SEARCH BAR ──
               Container(
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
@@ -190,7 +176,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onSubmitted: (_) => _load(),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: 'Cari transaksi...',
+                    hintText: l10n.translate('search_hint'), // <-- DINAMIS
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.calendar_month, size: 20),
@@ -204,7 +190,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
 
-              // Tampilkan info filter jika aktif
               if (_isFiltering)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
@@ -225,12 +210,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               const SizedBox(height: 24),
 
-              // ── LIST TRANSAKSI ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _isFiltering ? 'Hasil Pencarian' : 'Transaksi Terbaru',
+                    l10n.translate('recent_transactions'), // <-- DINAMIS
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   if (_isFiltering)
@@ -261,12 +245,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        _isFiltering ? 'Transaksi tidak ditemukan' : 'Belum ada transaksi',
+                        l10n.translate('no_transactions'), // <-- DINAMIS
                         style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Catat pengeluaran pertamamu hari ini',
+                        l10n.translate('no_transactions_sub'), // <-- DINAMIS
                         style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                       ),
                     ],
@@ -278,7 +262,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: _openEditScreen,
                 )),
                 
-              // Spasi lebih untuk FAB yang melayang
               const SizedBox(height: 100), 
             ],
           ),

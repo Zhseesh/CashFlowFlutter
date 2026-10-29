@@ -4,39 +4,43 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ThemeManager {
   ThemeManager._();
   
-  // Default ke system (mengikuti HP)
   static final ValueNotifier<ThemeMode> themeMode = ValueNotifier(ThemeMode.system);
+  static final ValueNotifier<Locale> locale = ValueNotifier(const Locale('id'));
   
-  static const _key = 'theme_mode';
+  static const _themeKey = 'theme_mode';
+  static const _localeKey = 'app_locale';
 
-  /// Dipanggil saat aplikasi pertama kali dibuka
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(_key);
     
-    if (saved == 'light') {
+    // Load Theme
+    final savedTheme = prefs.getString(_themeKey);
+    if (savedTheme == 'light') {
       themeMode.value = ThemeMode.light;
-    } else if (saved == 'dark') {
+    } else if (savedTheme == 'dark') {
       themeMode.value = ThemeMode.dark;
     } else {
       themeMode.value = ThemeMode.system;
+    }
+
+    // Load Locale
+    final savedLocale = prefs.getString(_localeKey);
+    if (savedLocale == 'en') {
+      locale.value = const Locale('en');
+    } else {
+      locale.value = const Locale('id');
     }
   }
 
-  /// Dipanggil saat tombol tema ditekan
-  static Future<void> toggle() async {
+  static Future<void> setTheme(ThemeMode mode) async {
+    themeMode.value = mode;
     final prefs = await SharedPreferences.getInstance();
-    
-    // Logika: Light -> Dark -> System -> Light
-    if (themeMode.value == ThemeMode.light) {
-      themeMode.value = ThemeMode.dark;
-      await prefs.setString(_key, 'dark');
-    } else if (themeMode.value == ThemeMode.dark) {
-      themeMode.value = ThemeMode.system;
-      await prefs.setString(_key, 'system');
-    } else {
-      themeMode.value = ThemeMode.light;
-      await prefs.setString(_key, 'light');
-    }
+    await prefs.setString(_themeKey, mode.name);
+  }
+
+  static Future<void> setLocale(String langCode) async {
+    locale.value = Locale(langCode);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_localeKey, langCode);
   }
 }

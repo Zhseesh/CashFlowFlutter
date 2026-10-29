@@ -130,9 +130,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      // PERBAIKAN: Mencegah FAB ikut naik/turun melompat saat keyboard dialog muncul
       resizeToAvoidBottomInset: false, 
-      
       appBar: AppBar(
         title: const Text('Kelola Tabungan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
@@ -142,27 +140,25 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
           : ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                Material(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                    side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (int i = 0; i < _wallets.length; i++) ...[
-                          _buildWalletTile(_wallets[i], isDark),
-                          if (i < _wallets.length - 1)
-                            Divider(
-                              height: 1,
-                              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
-                            ),
-                        ]
-                      ],
-                    ),
+                  clipBehavior: Clip.antiAlias, // <-- KUNCI AGAR RIPPLE RAPI
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (int i = 0; i < _wallets.length; i++) ...[
+                        _buildWalletTile(_wallets[i], isDark),
+                        if (i < _wallets.length - 1)
+                          Divider(
+                            height: 1,
+                            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
+                          ),
+                      ]
+                    ],
                   ),
                 ),
                 const SizedBox(height: 80),

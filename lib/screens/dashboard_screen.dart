@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/cashflow_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
@@ -8,7 +9,7 @@ import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
 import 'transaction_form_screen.dart';
 import 'wallet_management_screen.dart';
-import 'settings_screen.dart'; // IMPORT BARU
+import 'settings_screen.dart'; 
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -114,6 +115,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -122,7 +124,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             children: [
-              // ── CUSTOM HEADER ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -135,7 +136,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           valueListenable: AppState.activeWallet,
                           builder: (context, wallet, _) {
                             return Text(
-                              wallet?.name ?? 'Pilih Tabungan',
+                              wallet?.name ?? l10n.translate('main_wallet'), // <-- DINAMIS
                               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                             );
                           },
@@ -146,7 +147,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   
-                  // Tombol Pengaturan
                   Container(
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
@@ -176,7 +176,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onSubmitted: (_) => _load(),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: 'Cari transaksi...',
+                    hintText: l10n.translate('search_hint'), // <-- DINAMIS
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.calendar_month, size: 20),
@@ -214,7 +214,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _isFiltering ? 'Hasil Pencarian' : 'Transaksi Terbaru',
+                    l10n.translate('recent_transactions'), // <-- DINAMIS
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   if (_isFiltering)
@@ -245,12 +245,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        _isFiltering ? 'Transaksi tidak ditemukan' : 'Belum ada transaksi',
+                        l10n.translate('no_transactions'), // <-- DINAMIS
                         style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Catat pengeluaran pertamamu hari ini',
+                        l10n.translate('no_transactions_sub'), // <-- DINAMIS
                         style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                       ),
                     ],

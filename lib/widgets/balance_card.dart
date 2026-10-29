@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
 
@@ -11,6 +12,7 @@ class BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return ValueListenableBuilder<bool>(
       valueListenable: AppState.hideBalance,
@@ -40,11 +42,10 @@ class BalanceCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Saldo Saat Ini', 
-                    style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)
+                  Text(
+                    l10n.translate('current_balance'), // <-- DINAMIS
+                    style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)
                   ),
-                  // Ikon Mata untuk Toggle Sembunyikan Saldo
                   GestureDetector(
                     onTap: () => AppState.hideBalance.value = !isHidden,
                     child: Container(
@@ -69,7 +70,6 @@ class BalanceCard extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               
-              // Glassmorphism container untuk Pemasukan & Pengeluaran
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
@@ -80,7 +80,7 @@ class BalanceCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: _buildMini(Icons.arrow_downward, 'Pemasukan', isHidden ? 'Rp ••••••' : formatCurrency(income))
+                      child: _buildMini(Icons.arrow_downward, l10n.translate('income'), isHidden ? 'Rp ••••••' : formatCurrency(income))
                     ),
                     Container(
                       width: 1,
@@ -89,7 +89,7 @@ class BalanceCard extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                     ),
                     Expanded(
-                      child: _buildMini(Icons.arrow_upward, 'Pengeluaran', isHidden ? 'Rp ••••••' : formatCurrency(expense))
+                      child: _buildMini(Icons.arrow_upward, l10n.translate('expense'), isHidden ? 'Rp ••••••' : formatCurrency(expense))
                     ),
                   ],
                 ),

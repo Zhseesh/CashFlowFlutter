@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'data/cashflow_repository.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/main_shell.dart';
 import 'utils/app_state.dart';
 import 'utils/app_theme.dart';
@@ -48,6 +49,7 @@ class CashFlowApp extends StatelessWidget {
               themeMode: mode,
               locale: locale,
               localizationsDelegates: const [
+                AppLocalizations.delegate, // <-- KAMUS KITA
                 GlobalMaterialLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,

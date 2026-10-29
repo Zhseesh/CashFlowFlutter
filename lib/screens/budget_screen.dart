@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../data/cashflow_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/budget.dart';
 import '../models/category.dart';
 import '../utils/app_events.dart';
@@ -59,13 +59,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
   }
 
   Future<void> _editBudget(Category c) async {
+    final l10n = AppLocalizations.of(context)!;
     final existing = _budgets[c.name];
     final ctrl = TextEditingController(text: existing?.limitAmount.toStringAsFixed(0) ?? '');
     
     final result = await showDialog<double>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Anggaran: ${c.name}'),
+        title: Text('${l10n.translate('budget')}: ${c.name}'),
         content: TextField(
           controller: ctrl,
           keyboardType: TextInputType.number,
@@ -77,17 +78,17 @@ class _BudgetScreenState extends State<BudgetScreen> {
             TextButton(
               onPressed: () async {
                 await _repo.deleteBudget(existing.id!);
-                if (!mounted) return; // PERBAIKAN: Menggunakan mounted milik State
+                if (!mounted) return;
                 Navigator.pop(context);
                 _load();
                 AppEvents.notify();
               }, 
-              child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+              child: Text(l10n.translate('delete'), style: const TextStyle(color: Colors.red)),
             ),
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.translate('cancel'))),
           FilledButton(
             onPressed: () => Navigator.pop(context, double.tryParse(ctrl.text) ?? 0),
-            child: const Text('Simpan'),
+            child: Text(l10n.translate('save')),
           ),
         ],
       ),
@@ -108,97 +109,85 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final monthName = DateFormat('MMMM yyyy', 'id_ID').format(DateTime.now());
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Anggaran Bulanan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        title: Text(l10n.translate('budget'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                  child: Text('Periode: $monthName', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _categories.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, i) {
-                      final c = _categories[i];
-                      final b = _budgets[c.name];
-                      final spent = _spent[c.name] ?? 0.0;
-                      final limit = b?.limitAmount ?? 0.0;
-                      final isOver = limit > 0 && spent > limit;
-                      
-                      double pct = limit > 0 ? (spent / limit) : 0.0;
-                      if (pct > 1.0) pct = 1.0;
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: _categories.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, i) {
+                final c = _categories[i];
+                final b = _budgets[c.name];
+                final spent = _spent[c.name] ?? 0.0;
+                final limit = b?.limitAmount ?? 0.0;
+                final isOver = limit > 0 && spent > limit;
+                
+                double pct = limit > 0 ? (spent / limit) : 0.0;
+                if (pct > 1.0) pct = 1.0;
 
-                      return InkWell(
-                        onTap: () => _editBudget(c),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isOver 
-                                  ? Colors.red.withValues(alpha: 0.5) 
-                                  : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200)
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                return InkWell(
+                  onTap: () => _editBudget(c),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isOver 
+                            ? Colors.red.withValues(alpha: 0.5) 
+                            : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200)
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                            Icon(Icons.edit, size: 16, color: Colors.grey.shade400),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (limit == 0)
+                          Text(l10n.translate('no_budget'), style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
+                        else ...[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                                  Icon(Icons.edit, size: 16, color: Colors.grey.shade400),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              if (limit == 0)
-                                Text('Belum ada anggaran. Ketuk untuk mengatur.', style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
-                              else ...[
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(formatCurrency(spent), style: TextStyle(fontWeight: FontWeight.bold, color: isOver ? Colors.red : const Color(0xFF10B981), fontSize: 13)),
-                                    Text('dari ${formatCurrency(limit)}', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: LinearProgressIndicator(
-                                    value: pct,
-                                    minHeight: 8,
-                                    backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade100,
-                                    color: isOver ? Colors.red : const Color(0xFF10B981),
-                                  ),
-                                ),
-                                if (isOver)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8),
-                                    child: Text('Melebihi anggaran sebesar ${formatCurrency(spent - limit)}!', style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
-                                  ),
-                              ]
+                              Text(formatCurrency(spent), style: TextStyle(fontWeight: FontWeight.bold, color: isOver ? Colors.red : const Color(0xFF10B981), fontSize: 13)),
+                              Text('dari ${formatCurrency(limit)}', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                             ],
                           ),
-                        ),
-                      );
-                    },
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: pct,
+                              minHeight: 8,
+                              backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade100,
+                              color: isOver ? Colors.red : const Color(0xFF10B981),
+                            ),
+                          ),
+                          if (isOver)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text('Melebihi anggaran sebesar ${formatCurrency(spent - limit)}!', style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                        ]
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                );
+              },
             ),
     );
   }

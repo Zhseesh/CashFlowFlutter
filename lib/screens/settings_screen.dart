@@ -26,24 +26,41 @@ class SettingsScreen extends StatelessWidget {
             child: ValueListenableBuilder<ThemeMode>(
               valueListenable: ThemeManager.themeMode,
               builder: (context, mode, _) {
+                String currentText = mode == ThemeMode.system 
+                    ? l10n.translate('system')
+                    : mode == ThemeMode.light 
+                        ? l10n.translate('light') 
+                        : l10n.translate('dark');
+
                 return ListTile(
                   leading: const Icon(Icons.palette_outlined, color: Color(0xFF10B981)),
                   title: Text(l10n.translate('appearance'), style: const TextStyle(fontSize: 14)),
-                  trailing: DropdownButtonHideUnderline(
-                    child: DropdownButton<ThemeMode>(
-                      value: mode,
-                      icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-                      style: TextStyle(
-                        fontSize: 13, 
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87
+                  trailing: PopupMenuButton<ThemeMode>(
+                    position: PopupMenuPosition.under, // Memaksa menu selalu ke bawah
+                    initialValue: mode,
+                    onSelected: (v) => ThemeManager.setTheme(v),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(value: ThemeMode.system, child: Text(l10n.translate('system'))),
+                      PopupMenuItem(value: ThemeMode.light, child: Text(l10n.translate('light'))),
+                      PopupMenuItem(value: ThemeMode.dark, child: Text(l10n.translate('dark'))),
+                    ],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min, // Lebar pas dengan teks
+                        children: [
+                          Text(
+                            currentText,
+                            style: TextStyle(
+                              fontSize: 13, 
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down, size: 20),
+                        ],
                       ),
-                      onChanged: (v) => ThemeManager.setTheme(v!),
-                      items: [
-                        DropdownMenuItem(value: ThemeMode.system, child: Text(l10n.translate('system'))),
-                        DropdownMenuItem(value: ThemeMode.light, child: Text(l10n.translate('light'))),
-                        DropdownMenuItem(value: ThemeMode.dark, child: Text(l10n.translate('dark'))),
-                      ],
                     ),
                   ),
                 );
@@ -58,23 +75,38 @@ class SettingsScreen extends StatelessWidget {
             child: ValueListenableBuilder<Locale>(
               valueListenable: ThemeManager.locale,
               builder: (context, loc, _) {
+                String currentText = loc.languageCode == 'id' 
+                    ? l10n.translate('indonesian') 
+                    : l10n.translate('english');
+
                 return ListTile(
                   leading: const Icon(Icons.language, color: Color(0xFF10B981)),
                   title: Text(l10n.translate('language'), style: const TextStyle(fontSize: 14)),
-                  trailing: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: loc.languageCode,
-                      icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-                      style: TextStyle(
-                        fontSize: 13, 
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87
+                  trailing: PopupMenuButton<String>(
+                    position: PopupMenuPosition.under, // Memaksa menu selalu ke bawah
+                    initialValue: loc.languageCode,
+                    onSelected: (v) => ThemeManager.setLocale(v),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(value: 'id', child: Text(l10n.translate('indonesian'))),
+                      PopupMenuItem(value: 'en', child: Text(l10n.translate('english'))),
+                    ],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min, // Lebar pas dengan teks, tidak ada ruang kosong
+                        children: [
+                          Text(
+                            currentText,
+                            style: TextStyle(
+                              fontSize: 13, 
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down, size: 20),
+                        ],
                       ),
-                      onChanged: (v) => ThemeManager.setLocale(v!),
-                      items: [
-                        DropdownMenuItem(value: 'id', child: Text(l10n.translate('indonesian'))),
-                        DropdownMenuItem(value: 'en', child: Text(l10n.translate('english'))),
-                      ],
                     ),
                   ),
                 );
@@ -112,7 +144,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // Wrapper untuk memastikan ripple rapi
+  // Wrapper untuk memastikan ripple rapi dan tidak bocor
   Widget _buildMaterialWrapper({required bool isDark, required Widget child}) {
     return Material(
       color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
@@ -120,7 +152,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
       ),
-      clipBehavior: Clip.antiAlias, // Kunci agar ripple tidak keluar jalur
+      clipBehavior: Clip.antiAlias, 
       child: child,
     );
   }

@@ -32,35 +32,34 @@ class SettingsScreen extends StatelessWidget {
                         ? l10n.translate('light') 
                         : l10n.translate('dark');
 
-                return ListTile(
-                  leading: const Icon(Icons.palette_outlined, color: Color(0xFF10B981)),
-                  title: Text(l10n.translate('appearance'), style: const TextStyle(fontSize: 14)),
-                  trailing: PopupMenuButton<ThemeMode>(
-                    position: PopupMenuPosition.under, // Memaksa menu selalu ke bawah
-                    initialValue: mode,
-                    onSelected: (v) => ThemeManager.setTheme(v),
-                    itemBuilder: (context) => [
-                      PopupMenuItem(value: ThemeMode.system, child: Text(l10n.translate('system'))),
-                      PopupMenuItem(value: ThemeMode.light, child: Text(l10n.translate('light'))),
-                      PopupMenuItem(value: ThemeMode.dark, child: Text(l10n.translate('dark'))),
-                    ],
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min, // Lebar pas dengan teks
-                        children: [
-                          Text(
-                            currentText,
-                            style: TextStyle(
-                              fontSize: 13, 
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87
-                            ),
+                // PERBAIKAN: Seluruh ListTile dibungkus PopupMenuButton
+                return PopupMenuButton<ThemeMode>(
+                  position: PopupMenuPosition.under, 
+                  tooltip: '', // Menghilangkan tulisan "Show menu"
+                  initialValue: mode,
+                  onSelected: (v) => ThemeManager.setTheme(v),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(value: ThemeMode.system, child: Text(l10n.translate('system'))),
+                    PopupMenuItem(value: ThemeMode.light, child: Text(l10n.translate('light'))),
+                    PopupMenuItem(value: ThemeMode.dark, child: Text(l10n.translate('dark'))),
+                  ],
+                  child: ListTile(
+                    leading: const Icon(Icons.palette_outlined, color: Color(0xFF10B981)),
+                    title: Text(l10n.translate('appearance'), style: const TextStyle(fontSize: 14)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min, // Lebar pas dengan teks
+                      children: [
+                        Text(
+                          currentText,
+                          style: TextStyle(
+                            fontSize: 13, 
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.keyboard_arrow_down, size: 20),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.keyboard_arrow_down, size: 20),
+                      ],
                     ),
                   ),
                 );
@@ -79,34 +78,33 @@ class SettingsScreen extends StatelessWidget {
                     ? l10n.translate('indonesian') 
                     : l10n.translate('english');
 
-                return ListTile(
-                  leading: const Icon(Icons.language, color: Color(0xFF10B981)),
-                  title: Text(l10n.translate('language'), style: const TextStyle(fontSize: 14)),
-                  trailing: PopupMenuButton<String>(
-                    position: PopupMenuPosition.under, // Memaksa menu selalu ke bawah
-                    initialValue: loc.languageCode,
-                    onSelected: (v) => ThemeManager.setLocale(v),
-                    itemBuilder: (context) => [
-                      PopupMenuItem(value: 'id', child: Text(l10n.translate('indonesian'))),
-                      PopupMenuItem(value: 'en', child: Text(l10n.translate('english'))),
-                    ],
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min, // Lebar pas dengan teks, tidak ada ruang kosong
-                        children: [
-                          Text(
-                            currentText,
-                            style: TextStyle(
-                              fontSize: 13, 
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87
-                            ),
+                // PERBAIKAN: Seluruh ListTile dibungkus PopupMenuButton
+                return PopupMenuButton<String>(
+                  position: PopupMenuPosition.under, 
+                  tooltip: '', // Menghilangkan tulisan "Show menu"
+                  initialValue: loc.languageCode,
+                  onSelected: (v) => ThemeManager.setLocale(v),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(value: 'id', child: Text(l10n.translate('indonesian'))),
+                    PopupMenuItem(value: 'en', child: Text(l10n.translate('english'))),
+                  ],
+                  child: ListTile(
+                    leading: const Icon(Icons.language, color: Color(0xFF10B981)),
+                    title: Text(l10n.translate('language'), style: const TextStyle(fontSize: 14)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min, 
+                      children: [
+                        Text(
+                          currentText,
+                          style: TextStyle(
+                            fontSize: 13, 
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.keyboard_arrow_down, size: 20),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.keyboard_arrow_down, size: 20),
+                      ],
                     ),
                   ),
                 );

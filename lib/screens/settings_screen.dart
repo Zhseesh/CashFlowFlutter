@@ -26,27 +26,41 @@ class SettingsScreen extends StatelessWidget {
             child: ValueListenableBuilder<ThemeMode>(
               valueListenable: ThemeManager.themeMode,
               builder: (context, mode, _) {
-                return RadioGroup<ThemeMode>(
-                  groupValue: mode,
-                  onChanged: (v) => ThemeManager.setTheme(v!),
-                  child: Column(
-                    children: [
-                      RadioListTile<ThemeMode>(
-                        title: Text(l10n.translate('system'), style: const TextStyle(fontSize: 14)),
-                        value: ThemeMode.system,
-                        activeColor: const Color(0xFF10B981),
-                      ),
-                      RadioListTile<ThemeMode>(
-                        title: Text(l10n.translate('light'), style: const TextStyle(fontSize: 14)),
-                        value: ThemeMode.light,
-                        activeColor: const Color(0xFF10B981),
-                      ),
-                      RadioListTile<ThemeMode>(
-                        title: Text(l10n.translate('dark'), style: const TextStyle(fontSize: 14)),
-                        value: ThemeMode.dark,
-                        activeColor: const Color(0xFF10B981),
-                      ),
-                    ],
+                String currentText = mode == ThemeMode.system 
+                    ? l10n.translate('system')
+                    : mode == ThemeMode.light 
+                        ? l10n.translate('light') 
+                        : l10n.translate('dark');
+
+                // PERBAIKAN: Seluruh ListTile dibungkus PopupMenuButton
+                return PopupMenuButton<ThemeMode>(
+                  position: PopupMenuPosition.under, 
+                  tooltip: '', // Menghilangkan tulisan "Show menu"
+                  initialValue: mode,
+                  onSelected: (v) => ThemeManager.setTheme(v),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(value: ThemeMode.system, child: Text(l10n.translate('system'))),
+                    PopupMenuItem(value: ThemeMode.light, child: Text(l10n.translate('light'))),
+                    PopupMenuItem(value: ThemeMode.dark, child: Text(l10n.translate('dark'))),
+                  ],
+                  child: ListTile(
+                    leading: const Icon(Icons.palette_outlined, color: Color(0xFF10B981)),
+                    title: Text(l10n.translate('appearance'), style: const TextStyle(fontSize: 14)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min, // Lebar pas dengan teks
+                      children: [
+                        Text(
+                          currentText,
+                          style: TextStyle(
+                            fontSize: 13, 
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.keyboard_arrow_down, size: 20),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -60,22 +74,38 @@ class SettingsScreen extends StatelessWidget {
             child: ValueListenableBuilder<Locale>(
               valueListenable: ThemeManager.locale,
               builder: (context, loc, _) {
-                return RadioGroup<String>(
-                  groupValue: loc.languageCode,
-                  onChanged: (v) => ThemeManager.setLocale(v!),
-                  child: Column(
-                    children: [
-                      RadioListTile<String>(
-                        title: Text(l10n.translate('indonesian'), style: const TextStyle(fontSize: 14)),
-                        value: 'id',
-                        activeColor: const Color(0xFF10B981),
-                      ),
-                      RadioListTile<String>(
-                        title: Text(l10n.translate('english'), style: const TextStyle(fontSize: 14)),
-                        value: 'en',
-                        activeColor: const Color(0xFF10B981),
-                      ),
-                    ],
+                String currentText = loc.languageCode == 'id' 
+                    ? l10n.translate('indonesian') 
+                    : l10n.translate('english');
+
+                // PERBAIKAN: Seluruh ListTile dibungkus PopupMenuButton
+                return PopupMenuButton<String>(
+                  position: PopupMenuPosition.under, 
+                  tooltip: '', // Menghilangkan tulisan "Show menu"
+                  initialValue: loc.languageCode,
+                  onSelected: (v) => ThemeManager.setLocale(v),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(value: 'id', child: Text(l10n.translate('indonesian'))),
+                    PopupMenuItem(value: 'en', child: Text(l10n.translate('english'))),
+                  ],
+                  child: ListTile(
+                    leading: const Icon(Icons.language, color: Color(0xFF10B981)),
+                    title: Text(l10n.translate('language'), style: const TextStyle(fontSize: 14)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min, 
+                      children: [
+                        Text(
+                          currentText,
+                          style: TextStyle(
+                            fontSize: 13, 
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.keyboard_arrow_down, size: 20),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -112,7 +142,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // Widget pembantu untuk membuat kotak melengkung dengan ripple yang rapi
+  // Wrapper untuk memastikan ripple rapi dan tidak bocor
   Widget _buildMaterialWrapper({required bool isDark, required Widget child}) {
     return Material(
       color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
@@ -120,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
       ),
-      clipBehavior: Clip.antiAlias, // <-- KUNCI AGAR RIPPLE TIDAK KELUAR
+      clipBehavior: Clip.antiAlias, 
       child: child,
     );
   }

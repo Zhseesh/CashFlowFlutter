@@ -132,58 +132,60 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 double pct = limit > 0 ? (spent / limit) : 0.0;
                 if (pct > 1.0) pct = 1.0;
 
-                return InkWell(
-                  onTap: () => _editBudget(c),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isOver 
-                            ? Colors.red.withValues(alpha: 0.5) 
-                            : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200)
-                      ),
+                return Material(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: isOver 
+                          ? Colors.red.withValues(alpha: 0.5) 
+                          : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200)
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                            Icon(Icons.edit, size: 16, color: Colors.grey.shade400),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        if (limit == 0)
-                          Text(l10n.translate('no_budget'), style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
-                        else ...[
+                  ),
+                  clipBehavior: Clip.antiAlias, // <-- KUNCI AGAR RIPPLE RAPI
+                  child: InkWell(
+                    onTap: () => _editBudget(c),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(formatCurrency(spent), style: TextStyle(fontWeight: FontWeight.bold, color: isOver ? Colors.red : const Color(0xFF10B981), fontSize: 13)),
-                              Text('dari ${formatCurrency(limit)}', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                              Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                              Icon(Icons.edit, size: 16, color: Colors.grey.shade400),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: pct,
-                              minHeight: 8,
-                              backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade100,
-                              color: isOver ? Colors.red : const Color(0xFF10B981),
+                          const SizedBox(height: 12),
+                          if (limit == 0)
+                            Text(l10n.translate('no_budget'), style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
+                          else ...[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(formatCurrency(spent), style: TextStyle(fontWeight: FontWeight.bold, color: isOver ? Colors.red : const Color(0xFF10B981), fontSize: 13)),
+                                Text('dari ${formatCurrency(limit)}', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                              ],
                             ),
-                          ),
-                          if (isOver)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text('Melebihi anggaran sebesar ${formatCurrency(spent - limit)}!', style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: pct,
+                                minHeight: 8,
+                                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade100,
+                                color: isOver ? Colors.red : const Color(0xFF10B981),
+                              ),
                             ),
-                        ]
-                      ],
+                            if (isOver)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text('Melebihi anggaran sebesar ${formatCurrency(spent - limit)}!', style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
+                              ),
+                          ]
+                        ],
+                      ),
                     ),
                   ),
                 );

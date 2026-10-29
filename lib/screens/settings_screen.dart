@@ -26,27 +26,25 @@ class SettingsScreen extends StatelessWidget {
             child: ValueListenableBuilder<ThemeMode>(
               valueListenable: ThemeManager.themeMode,
               builder: (context, mode, _) {
-                return RadioGroup<ThemeMode>(
-                  groupValue: mode,
-                  onChanged: (v) => ThemeManager.setTheme(v!),
-                  child: Column(
-                    children: [
-                      RadioListTile<ThemeMode>(
-                        title: Text(l10n.translate('system'), style: const TextStyle(fontSize: 14)),
-                        value: ThemeMode.system,
-                        activeColor: const Color(0xFF10B981),
+                return ListTile(
+                  leading: const Icon(Icons.palette_outlined, color: Color(0xFF10B981)),
+                  title: Text(l10n.translate('appearance'), style: const TextStyle(fontSize: 14)),
+                  trailing: DropdownButtonHideUnderline(
+                    child: DropdownButton<ThemeMode>(
+                      value: mode,
+                      icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                      style: TextStyle(
+                        fontSize: 13, 
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87
                       ),
-                      RadioListTile<ThemeMode>(
-                        title: Text(l10n.translate('light'), style: const TextStyle(fontSize: 14)),
-                        value: ThemeMode.light,
-                        activeColor: const Color(0xFF10B981),
-                      ),
-                      RadioListTile<ThemeMode>(
-                        title: Text(l10n.translate('dark'), style: const TextStyle(fontSize: 14)),
-                        value: ThemeMode.dark,
-                        activeColor: const Color(0xFF10B981),
-                      ),
-                    ],
+                      onChanged: (v) => ThemeManager.setTheme(v!),
+                      items: [
+                        DropdownMenuItem(value: ThemeMode.system, child: Text(l10n.translate('system'))),
+                        DropdownMenuItem(value: ThemeMode.light, child: Text(l10n.translate('light'))),
+                        DropdownMenuItem(value: ThemeMode.dark, child: Text(l10n.translate('dark'))),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -60,22 +58,24 @@ class SettingsScreen extends StatelessWidget {
             child: ValueListenableBuilder<Locale>(
               valueListenable: ThemeManager.locale,
               builder: (context, loc, _) {
-                return RadioGroup<String>(
-                  groupValue: loc.languageCode,
-                  onChanged: (v) => ThemeManager.setLocale(v!),
-                  child: Column(
-                    children: [
-                      RadioListTile<String>(
-                        title: Text(l10n.translate('indonesian'), style: const TextStyle(fontSize: 14)),
-                        value: 'id',
-                        activeColor: const Color(0xFF10B981),
+                return ListTile(
+                  leading: const Icon(Icons.language, color: Color(0xFF10B981)),
+                  title: Text(l10n.translate('language'), style: const TextStyle(fontSize: 14)),
+                  trailing: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: loc.languageCode,
+                      icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                      style: TextStyle(
+                        fontSize: 13, 
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87
                       ),
-                      RadioListTile<String>(
-                        title: Text(l10n.translate('english'), style: const TextStyle(fontSize: 14)),
-                        value: 'en',
-                        activeColor: const Color(0xFF10B981),
-                      ),
-                    ],
+                      onChanged: (v) => ThemeManager.setLocale(v!),
+                      items: [
+                        DropdownMenuItem(value: 'id', child: Text(l10n.translate('indonesian'))),
+                        DropdownMenuItem(value: 'en', child: Text(l10n.translate('english'))),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -112,7 +112,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // Widget pembantu untuk membuat kotak melengkung dengan ripple yang rapi
+  // Wrapper untuk memastikan ripple rapi
   Widget _buildMaterialWrapper({required bool isDark, required Widget child}) {
     return Material(
       color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
@@ -120,7 +120,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
       ),
-      clipBehavior: Clip.antiAlias, // <-- KUNCI AGAR RIPPLE TIDAK KELUAR
+      clipBehavior: Clip.antiAlias, // Kunci agar ripple tidak keluar jalur
       child: child,
     );
   }

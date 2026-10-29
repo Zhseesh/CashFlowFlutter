@@ -4,13 +4,14 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:open_filex/open_filex.dart';
 import '../data/cashflow_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../services/attachment_service.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
-import 'category_management_screen.dart'; // IMPORT BARU
+import 'category_management_screen.dart';
 
 class TransactionFormScreen extends StatefulWidget {
   final TransactionRecord? editing;
@@ -210,9 +211,9 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     required IconData icon,
     required String label,
     required Widget child,
-    Color? iconColor,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Row(
@@ -222,7 +223,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             width: 40,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Icon(icon, color: iconColor ?? (isDark ? Colors.grey.shade500 : Colors.grey.shade400), size: 20),
+              // PERBAIKAN: Semua ikon sekarang menggunakan warna yang seragam (abu-abu)
+              child: Icon(
+                icon, 
+                color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, 
+                size: 20
+              ),
             ),
           ),
           Expanded(
@@ -379,6 +385,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accentColor = _type == 'INCOME' ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -442,7 +449,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                               children: [
                                 Icon(Icons.check, size: 14, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey),
                                 const SizedBox(width: 6),
-                                Text('Pemasukan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey)),
+                                Text(l10n.translate('income'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey)),
                               ],
                             ),
                           ),
@@ -458,7 +465,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                               children: [
                                 Icon(Icons.arrow_outward, size: 14, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey),
                                 const SizedBox(width: 6),
-                                Text('Pengeluaran', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey)),
+                                Text(l10n.translate('expense'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey)),
                               ],
                             ),
                           ),
@@ -494,7 +501,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             _buildHairlineInput(
               icon: Icons.attach_money,
               label: 'Nominal',
-              iconColor: isDark ? Colors.white : Colors.black87,
+              // PERBAIKAN: Override warna dihapus, sekarang menggunakan abu-abu default
               child: TextFormField(
                 controller: _amountCtrl,
                 keyboardType: TextInputType.number,
@@ -535,13 +542,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                       ),
                     ),
                   ),
-                  // TOMBOL KELOLA KATEGORI BARU
                   IconButton(
                     tooltip: 'Kelola Kategori',
                     icon: const Icon(Icons.tune, size: 20, color: Color(0xFF10B981)),
                     onPressed: _saving ? null : () async {
                       await Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryManagementScreen()));
-                      _loadCategories(); // Refresh dropdown setelah kembali dari kelola kategori
+                      _loadCategories();
                     },
                   ),
                 ],
@@ -612,7 +618,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
               ),
               child: _saving
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(_isEditing ? 'Perbarui' : 'Simpan', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  : Text(_isEditing ? 'Perbarui' : l10n.translate('save'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
         ),

@@ -45,8 +45,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     if (_isEditing) {
       final e = widget.editing!;
       _titleCtrl.text = e.title;
-      // PERUBAHAN: Gunakan en_US (koma) saat mengisi form edit
-      _amountCtrl.text = NumberFormat.decimalPattern('en_US').format(e.amount.round());
+      // PERBAIKAN: Jangan gunakan .round() agar angka desimal tetap muncul saat edit
+      _amountCtrl.text = NumberFormat.decimalPattern('en_US').format(e.amount);
       _noteCtrl.text = e.note ?? '';
       _type = e.type;
       _date = e.date;
@@ -143,7 +143,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         finalAttachments.add(newFilename);
       }
 
-      // PERUBAHAN: Hapus koma (,) untuk parsing angka desimal murni
+      // PERBAIKAN: Ganti koma untuk parsing angka desimal murni
       final amount = double.parse(_amountCtrl.text.replaceAll(',', ''));
       final t = TransactionRecord(
         id: widget.editing?.id,
@@ -500,11 +500,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
               label: 'Nominal',
               child: TextFormField(
                 controller: _amountCtrl,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly, _ThousandsFormatter()],
+                // PERBAIKAN: Mengizinkan input desimal dari keyboard
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')), _ThousandsFormatter()],
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 decoration: const InputDecoration(
-                  prefixText: 'IDR ', // PERUBAHAN: Rp menjadi IDR
+                  prefixText: 'IDR ',
                   prefixStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.grey),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
@@ -514,7 +515,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Nominal wajib diisi';
-                  // PERUBAHAN: Ganti koma untuk parsing
+                  // PERBAIKAN: Ganti koma untuk parsing
                   final n = double.tryParse(v.replaceAll(',', ''));
                   if (n == null || n <= 0) return 'Nominal tidak valid';
                   return null;
@@ -626,13 +627,42 @@ class _ThousandsFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     if (newValue.text.isEmpty) return newValue;
-    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.isEmpty) return newValue.copyWith(text: '');
-    // PERUBAHAN: Gunakan en_US agar pemisah ribuan memakai koma (,)
-    final formatted = NumberFormat.decimalPattern('en_US').format(int.parse(digits));
+    
+    // 1. Ambil hanya angka, titik, dan koma
+    String cleaned = newValue.text.replaceAll(RegExp(r'[^0-9.,]'), '');
+    
+    // 2. Standarisasi: Ganti koma menjadi titik (agar desimal selalu pakai titik)
+    cleaned = cleaned.replaceAll(',', '.');
+    
+    // 3. Pisahkan bagian bulat dan desimal
+    List<String> parts = cleaned.split('.');
+    String integerPart = parts[0];
+    String decimalPart = parts.length > 1 ? parts[1] : '';
+    
+    // 4. Batasi desimal maksimal 2 angka
+    if (decimalPart.length > 2) {
+      decimalPart = decimalPart.substring(0, 2);
+    }
+    
+    // 5. Format bagian bulat dengan koma (ribuan)
+    String formattedInteger = '';
+    if (integerPart.isNotEmpty) {
+      try {
+        formattedInteger = NumberFormat.decimalPattern('en_US').format(int.parse(integerPart));
+      } catch (e) {
+        formattedInteger = integerPart;
+      }
+    }
+    
+    // 6. Gabungkan kembali
+    String formattedText = formattedInteger;
+    if (parts.length > 1) {
+      formattedText += '.$decimalPart';
+    }
+    
     return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
+      text: formattedText,
+      selection: TextSelection.collapsed(offset: formattedText.length),
     );
   }
 }

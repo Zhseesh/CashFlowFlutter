@@ -19,7 +19,8 @@ class PdfExportService {
     required int year,
   }) async {
     final doc = pw.Document();
-    final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    // PERUBAHAN: Format ke en_US & IDR
+    final fmt = NumberFormat.currency(locale: 'en_US', symbol: 'IDR ', decimalDigits: 2);
 
     doc.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4,

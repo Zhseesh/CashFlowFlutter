@@ -219,7 +219,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         content: TextField(
           controller: ctrl,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Nominal (Rp)'),
+          // PERUBAHAN: Rp menjadi IDR
+          decoration: const InputDecoration(labelText: 'Nominal (IDR)'), 
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
@@ -251,7 +252,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
               const Text('Laporan & Data', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
 
-              // Active Wallet Info
               ValueListenableBuilder(
                 valueListenable: AppState.activeWallet,
                 builder: (context, wallet, _) {
@@ -281,7 +281,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 },
               ),
 
-              // Initial Balance Card
               Container(
                 padding: const EdgeInsets.all(16),
                 margin: const EdgeInsets.only(bottom: 24),
@@ -319,7 +318,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
               ),
 
-              // Section: Ekspor
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 8),
                 child: Text('EKSPOR DOKUMEN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
@@ -356,7 +354,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
               ),
 
-              // Section: Backup
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 8),
                 child: Text('CADANGAN DATA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),

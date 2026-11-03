@@ -43,7 +43,7 @@ class BalanceCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.translate('current_balance'), // <-- DINAMIS
+                    l10n.translate('current_balance'),
                     style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)
                   ),
                   GestureDetector(
@@ -65,7 +65,8 @@ class BalanceCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                isHidden ? 'Rp ••••••••' : formatCurrency(balance), 
+                // PERUBAHAN: Rp menjadi IDR
+                isHidden ? 'IDR ••••••••' : formatCurrency(balance), 
                 style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold, letterSpacing: -1)
               ),
               const SizedBox(height: 24),
@@ -80,7 +81,8 @@ class BalanceCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: _buildMini(Icons.arrow_downward, l10n.translate('income'), isHidden ? 'Rp ••••••' : formatCurrency(income))
+                      // PERUBAHAN: Rp menjadi IDR
+                      child: _buildMini(Icons.arrow_downward, l10n.translate('income'), isHidden ? 'IDR ••••••' : formatCurrency(income))
                     ),
                     Container(
                       width: 1,
@@ -89,7 +91,8 @@ class BalanceCard extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                     ),
                     Expanded(
-                      child: _buildMini(Icons.arrow_upward, l10n.translate('expense'), isHidden ? 'Rp ••••••' : formatCurrency(expense))
+                      // PERUBAHAN: Rp menjadi IDR
+                      child: _buildMini(Icons.arrow_upward, l10n.translate('expense'), isHidden ? 'IDR ••••••' : formatCurrency(expense))
                     ),
                   ],
                 ),

@@ -45,7 +45,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     if (_isEditing) {
       final e = widget.editing!;
       _titleCtrl.text = e.title;
-      _amountCtrl.text = NumberFormat.decimalPattern('id_ID').format(e.amount.round());
+      // PERUBAHAN: Gunakan en_US (koma) saat mengisi form edit
+      _amountCtrl.text = NumberFormat.decimalPattern('en_US').format(e.amount.round());
       _noteCtrl.text = e.note ?? '';
       _type = e.type;
       _date = e.date;
@@ -142,7 +143,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         finalAttachments.add(newFilename);
       }
 
-      final amount = double.parse(_amountCtrl.text.replaceAll('.', '').replaceAll(',', '.'));
+      // PERUBAHAN: Hapus koma (,) untuk parsing angka desimal murni
+      final amount = double.parse(_amountCtrl.text.replaceAll(',', ''));
       final t = TransactionRecord(
         id: widget.editing?.id,
         walletId: widget.editing?.walletId ?? AppState.activeWalletId,
@@ -223,7 +225,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             width: 40,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              // PERBAIKAN: Semua ikon sekarang menggunakan warna yang seragam (abu-abu)
               child: Icon(
                 icon, 
                 color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, 
@@ -282,7 +283,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         ),
         const SizedBox(height: 12),
 
-        // List File Lama
         ..._existingAttachments.map((path) => Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -319,7 +319,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         )),
 
-        // List File Baru
         ..._newTempAttachments.map((path) => Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -408,7 +407,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           children: [
-            // ── ANIMASI SLIDING TOGGLE ──
             Container(
               height: 48,
               padding: const EdgeInsets.all(4),
@@ -478,7 +476,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
             const SizedBox(height: 32),
 
-            // ── FORM HAIRLINE ──
             _buildHairlineInput(
               icon: Icons.title,
               label: 'Judul',
@@ -501,14 +498,13 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             _buildHairlineInput(
               icon: Icons.attach_money,
               label: 'Nominal',
-              // PERBAIKAN: Override warna dihapus, sekarang menggunakan abu-abu default
               child: TextFormField(
                 controller: _amountCtrl,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly, _ThousandsFormatter()],
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 decoration: const InputDecoration(
-                  prefixText: 'Rp ',
+                  prefixText: 'IDR ', // PERUBAHAN: Rp menjadi IDR
                   prefixStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.grey),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
@@ -518,7 +514,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Nominal wajib diisi';
-                  final n = double.tryParse(v.replaceAll('.', ''));
+                  // PERUBAHAN: Ganti koma untuk parsing
+                  final n = double.tryParse(v.replaceAll(',', ''));
                   if (n == null || n <= 0) return 'Nominal tidak valid';
                   return null;
                 },
@@ -590,7 +587,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
             const SizedBox(height: 12),
             
-            // ── ATTACHMENT ──
             _buildAttachmentSection(),
             
             const SizedBox(height: 40),
@@ -598,7 +594,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         ),
       ),
       
-      // ── TOMBOL BAWAH ──
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -633,7 +628,8 @@ class _ThousandsFormatter extends TextInputFormatter {
     if (newValue.text.isEmpty) return newValue;
     final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
     if (digits.isEmpty) return newValue.copyWith(text: '');
-    final formatted = NumberFormat.decimalPattern('id_ID').format(int.parse(digits));
+    // PERUBAHAN: Gunakan en_US agar pemisah ribuan memakai koma (,)
+    final formatted = NumberFormat.decimalPattern('en_US').format(int.parse(digits));
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(offset: formatted.length),

@@ -21,8 +21,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _repo = CashFlowRepository();
   
   double _balance = 0;
-  double _incomeMonth = 0;
-  double _expenseMonth = 0;
+  double _incomeTotal = 0;
+  double _expenseTotal = 0;
   List<TransactionRecord> _transactions = [];
   bool _loading = true;
 
@@ -58,13 +58,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     setState(() => _loading = true);
     
-    final now = DateTime.now();
-    final startMonth = DateTime(now.year, now.month, 1);
-    final endMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-    
     final balance = await _repo.getCurrentBalance(walletId);
-    final inc = await _repo.totalByType('INCOME', walletId: walletId, from: startMonth, to: endMonth);
-    final exp = await _repo.totalByType('EXPENSE', walletId: walletId, from: startMonth, to: endMonth);
+    // PERBAIKAN BUG: Mengambil total keseluruhan (tanpa filter bulan)
+    final inc = await _repo.totalByType('INCOME', walletId: walletId);
+    final exp = await _repo.totalByType('EXPENSE', walletId: walletId);
 
     final txs = await _repo.getTransactions(
       walletId: walletId,
@@ -79,8 +76,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (!mounted) return;
     setState(() {
       _balance = balance;
-      _incomeMonth = inc;
-      _expenseMonth = exp;
+      _incomeTotal = inc;
+      _expenseTotal = exp;
       _transactions = txs;
       _loading = false;
     });
@@ -136,7 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           valueListenable: AppState.activeWallet,
                           builder: (context, wallet, _) {
                             return Text(
-                              wallet?.name ?? l10n.translate('main_wallet'), // <-- DINAMIS
+                              wallet?.name ?? l10n.translate('main_wallet'),
                               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                             );
                           },
@@ -162,7 +159,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 24),
 
-              BalanceCard(balance: _balance, income: _incomeMonth, expense: _expenseMonth),
+              BalanceCard(balance: _balance, income: _incomeTotal, expense: _expenseTotal),
               const SizedBox(height: 24),
               
               Container(
@@ -176,7 +173,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onSubmitted: (_) => _load(),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: l10n.translate('search_hint'), // <-- DINAMIS
+                    hintText: l10n.translate('search_hint'),
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.calendar_month, size: 20),
@@ -214,7 +211,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.translate('recent_transactions'), // <-- DINAMIS
+                    l10n.translate('recent_transactions'),
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   if (_isFiltering)
@@ -245,12 +242,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        l10n.translate('no_transactions'), // <-- DINAMIS
+                        l10n.translate('no_transactions'),
                         style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        l10n.translate('no_transactions_sub'), // <-- DINAMIS
+                        l10n.translate('no_transactions_sub'),
                         style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                       ),
                     ],
@@ -262,7 +259,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: _openEditScreen,
                 )),
                 
-              const SizedBox(height: 100), 
+              // Jarak ekstra karena navbar sekarang melayang
+              const SizedBox(height: 120), 
             ],
           ),
         ),

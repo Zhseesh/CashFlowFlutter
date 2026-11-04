@@ -55,7 +55,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     
     final file = await PdfExportService.buildReport(
       walletName: walletName, transactions: txs, 
-      saldoAwal: 0, // PERUBAHAN: Set 0 karena saldo awal dihapus dari UI
+      saldoAwal: 0, 
       totalIncome: inc, totalExpense: exp, periodStart: start, periodEnd: end,
       monthlyData: monthly, year: now.year,
     );
@@ -82,7 +82,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final all = await _repo.getTransactions(walletId: walletId, limit: 100000);
     final file = await CsvExportService.export(
       walletName: walletName, transactions: all, 
-      saldoAwal: 0, // PERUBAHAN: Set 0
+      saldoAwal: 0, 
     );
     
     if (file == null) return _toast('Gagal membuat CSV.');
@@ -108,7 +108,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     
     final jsonString = await JsonBackupService.export(
       categories: cats, transactions: txs, 
-      saldoAwal: 0, // PERUBAHAN: Set 0
+      saldoAwal: 0, 
     );
     
     final fileName = 'CashFlow_Backup_${DateTime.now().millisecondsSinceEpoch}.json';
@@ -172,7 +172,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         
         final updatedTx = TransactionRecord(
           id: null, walletId: walletId, title: pt.transaction.title, amount: pt.transaction.amount,
-          type: pt.transaction.type, categoryId: pt.transaction.categoryId, categoryName: pt.transaction.categoryName,
+          type: pt.transaction.type == 'INCOME' ? 'INCOME' : 'EXPENSE', // Pastikan tipe valid
+          categoryId: pt.transaction.categoryId, categoryName: pt.transaction.categoryName,
           dateMillis: pt.transaction.dateMillis, note: pt.transaction.note,
           attachments: newFilenames,
         );
@@ -209,7 +210,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 builder: (context, wallet, _) {
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    margin: const EdgeInsets.only(bottom: 24), // Jarak agak jauh karena saldo awal dihapus
+                    margin: const EdgeInsets.only(bottom: 24), 
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF064E3B).withValues(alpha: 0.4) : const Color(0xFFECFDF5),
                       borderRadius: BorderRadius.circular(12),
@@ -237,7 +238,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 padding: const EdgeInsets.only(left: 4, bottom: 8),
                 child: Text('EKSPOR DOKUMEN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
               ),
-              // PERBAIKAN RIPPLE: Menggunakan Material + shape + clipBehavior
               Material(
                 color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                 shape: RoundedRectangleBorder(
@@ -273,7 +273,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 padding: const EdgeInsets.only(left: 4, bottom: 8),
                 child: Text('CADANGAN DATA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
               ),
-              // PERBAIKAN RIPPLE
               Material(
                 color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                 shape: RoundedRectangleBorder(
@@ -302,6 +301,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   ],
                 ),
               ),
+              
+              // Jarak ekstra karena navbar sekarang melayang
+              const SizedBox(height: 120),
             ],
           ),
           if (_busy)

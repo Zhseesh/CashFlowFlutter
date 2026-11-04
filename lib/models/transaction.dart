@@ -47,19 +47,19 @@ class TransactionRecord {
     if (m['attachment_paths'] != null) {
       parsedAttachments = (jsonDecode(m['attachment_paths']) as List).cast<String>();
     } else if (m['attachment_path'] != null) {
-      // Fallback untuk data lama
       parsedAttachments = [m['attachment_path'] as String];
     }
 
+    // PERBAIKAN: Parsing yang aman (type-safe) untuk mencegah impor gagal
     return TransactionRecord(
       id: m['id'] as int?,
       walletId: m['wallet_id'] as int?,
-      title: m['title'] as String,
-      amount: (m['amount'] as num).toDouble(),
-      type: m['type'] as String,
+      title: m['title'] as String? ?? 'Tanpa Judul',
+      amount: (m['amount'] as num?)?.toDouble() ?? 0.0,
+      type: (m['type'] as String?) ?? 'EXPENSE',
       categoryId: m['category_id'] as int?,
-      categoryName: m['category_name'] as String,
-      dateMillis: m['date_millis'] as int,
+      categoryName: (m['category_name'] as String?) ?? 'Lainnya',
+      dateMillis: (m['date_millis'] as num?)?.toInt() ?? DateTime.now().millisecondsSinceEpoch,
       note: m['note'] as String?,
       attachments: parsedAttachments,
     );

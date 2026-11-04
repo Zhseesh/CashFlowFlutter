@@ -45,7 +45,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     if (_isEditing) {
       final e = widget.editing!;
       _titleCtrl.text = e.title;
-      _amountCtrl.text = NumberFormat.decimalPattern('id_ID').format(e.amount.round());
+      _amountCtrl.text = NumberFormat.decimalPattern('en_US').format(e.amount);
       _noteCtrl.text = e.note ?? '';
       _type = e.type;
       _date = e.date;
@@ -142,7 +142,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         finalAttachments.add(newFilename);
       }
 
-      final amount = double.parse(_amountCtrl.text.replaceAll('.', '').replaceAll(',', '.'));
+      final amount = double.parse(_amountCtrl.text.replaceAll(',', ''));
       final t = TransactionRecord(
         id: widget.editing?.id,
         walletId: widget.editing?.walletId ?? AppState.activeWalletId,
@@ -208,7 +208,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   }
 
   Widget _buildHairlineInput({
-    required IconData icon,
+    required Widget leading,
     required String label,
     required Widget child,
   }) {
@@ -223,12 +223,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             width: 40,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              // PERBAIKAN: Semua ikon sekarang menggunakan warna yang seragam (abu-abu)
-              child: Icon(
-                icon, 
-                color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, 
-                size: 20
-              ),
+              child: leading,
             ),
           ),
           Expanded(
@@ -282,7 +277,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         ),
         const SizedBox(height: 12),
 
-        // List File Lama
         ..._existingAttachments.map((path) => Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -319,7 +313,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         )),
 
-        // List File Baru
         ..._newTempAttachments.map((path) => Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -408,7 +401,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           children: [
-            // ── ANIMASI SLIDING TOGGLE ──
             Container(
               height: 48,
               padding: const EdgeInsets.all(4),
@@ -478,9 +470,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
             const SizedBox(height: 32),
 
-            // ── FORM HAIRLINE ──
             _buildHairlineInput(
-              icon: Icons.title,
+              leading: Icon(Icons.title, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: 'Judul',
               child: TextFormField(
                 controller: _titleCtrl,
@@ -499,17 +490,21 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              icon: Icons.attach_money,
+              leading: Text(
+                'IDR', 
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 13, 
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade500
+                )
+              ),
               label: 'Nominal',
-              // PERBAIKAN: Override warna dihapus, sekarang menggunakan abu-abu default
               child: TextFormField(
                 controller: _amountCtrl,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly, _ThousandsFormatter()],
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')), CurrencyInputFormatter()],
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 decoration: const InputDecoration(
-                  prefixText: 'Rp ',
-                  prefixStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.grey),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
@@ -518,7 +513,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Nominal wajib diisi';
-                  final n = double.tryParse(v.replaceAll('.', ''));
+                  final n = double.tryParse(v.replaceAll(',', ''));
                   if (n == null || n <= 0) return 'Nominal tidak valid';
                   return null;
                 },
@@ -526,7 +521,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              icon: Icons.category_outlined,
+              leading: Icon(Icons.category_outlined, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: 'Kategori',
               child: Row(
                 children: [
@@ -555,7 +550,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              icon: Icons.calendar_today,
+              leading: Icon(Icons.calendar_today, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: 'Tanggal',
               child: InkWell(
                 onTap: _saving ? null : _pickDate,
@@ -570,7 +565,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              icon: Icons.notes,
+              leading: Icon(Icons.notes, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: 'Catatan (opsional)',
               child: TextFormField(
                 controller: _noteCtrl,
@@ -590,7 +585,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
             const SizedBox(height: 12),
             
-            // ── ATTACHMENT ──
             _buildAttachmentSection(),
             
             const SizedBox(height: 40),
@@ -598,7 +592,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         ),
       ),
       
-      // ── TOMBOL BAWAH ──
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -623,20 +616,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ThousandsFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.isEmpty) return newValue;
-    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.isEmpty) return newValue.copyWith(text: '');
-    final formatted = NumberFormat.decimalPattern('id_ID').format(int.parse(digits));
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

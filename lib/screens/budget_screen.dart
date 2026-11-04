@@ -70,7 +70,8 @@ class _BudgetScreenState extends State<BudgetScreen> {
         content: TextField(
           controller: ctrl,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Batas Maksimal (Rp)', prefixText: 'Rp '),
+          // PERUBAHAN: Rp menjadi IDR
+          decoration: const InputDecoration(labelText: 'Batas Maksimal (IDR)', prefixText: 'IDR '),
           autofocus: true,
         ),
         actions: [
@@ -142,7 +143,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                           : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200)
                     ),
                   ),
-                  clipBehavior: Clip.antiAlias, // <-- KUNCI AGAR RIPPLE RAPI
+                  clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     onTap: () => _editBudget(c),
                     child: Padding(

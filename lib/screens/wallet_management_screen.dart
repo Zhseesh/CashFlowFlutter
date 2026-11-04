@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../data/cashflow_repository.dart';
+import '../models/transaction.dart';
 import '../models/wallet.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
@@ -33,31 +35,91 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   }
 
   Future<void> _addWallet() async {
-    final ctrl = TextEditingController();
-    final name = await showDialog<String>(
+    final nameCtrl = TextEditingController();
+    final balanceCtrl = TextEditingController(); // Dikosongkan secara default
+
+    // Dialog form untuk Nama dan Saldo Awal
+    final result = await showDialog<({String name, double balance})>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Tambah Tabungan'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Nama Tabungan'),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, ctrl.text.trim()),
-            child: const Text('Simpan'),
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Tambah Tabungan Baru'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Nama Tabungan',
+                  hintText: 'Contoh: Dompet Utama',
+                ),
+                textCapitalization: TextCapitalization.words,
+                autofocus: true,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: balanceCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                  CurrencyInputFormatter()
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Saldo Awal (Opsional)',
+                  prefixText: 'IDR ',
+                  hintText: '0.00',
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), 
+              child: const Text('Batal')
+            ),
+            FilledButton(
+              onPressed: () {
+                final balanceStr = balanceCtrl.text.replaceAll(',', '');
+                final balance = double.tryParse(balanceStr) ?? 0.0;
+                Navigator.pop(context, (name: nameCtrl.text.trim(), balance: balance));
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
     );
-    if (name == null || name.isEmpty) return;
-    
-    await _repo.insertWallet(Wallet(
-      name: name,
+
+    if (result == null || result.name.isEmpty) return;
+
+    // 1. Simpan Tabungan Baru ke Database
+    final newWalletId = await _repo.insertWallet(Wallet(
+      name: result.name,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     ));
+
+    // 2. Jika Saldo Awal > 0, buat transaksi Pemasukan otomatis
+    if (result.balance > 0) {
+      // Cari kategori Pemasukan (default: 'Lainnya')
+      final categories = await _repo.getCategories(type: 'INCOME');
+      final defaultCategory = categories.firstWhere(
+        (c) => c.name == 'Lainnya',
+        orElse: () => categories.first,
+      );
+
+      final tx = TransactionRecord(
+        walletId: newWalletId,
+        title: 'Saldo Awal',
+        amount: result.balance,
+        type: 'INCOME',
+        categoryId: defaultCategory.id,
+        categoryName: defaultCategory.name,
+        dateMillis: DateTime.now().millisecondsSinceEpoch,
+        note: 'Saldo awal saat pembuatan tabungan',
+      );
+      await _repo.insertTransaction(tx);
+    }
+
     _load();
     AppEvents.notify();
   }
@@ -146,7 +208,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                     borderRadius: BorderRadius.circular(24),
                     side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
                   ),
-                  clipBehavior: Clip.antiAlias, // <-- KUNCI AGAR RIPPLE RAPI
+                  clipBehavior: Clip.antiAlias,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [

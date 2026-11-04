@@ -11,7 +11,6 @@ import '../services/json_backup_service.dart';
 import '../services/pdf_export_service.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
-import '../utils/formatters.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -22,27 +21,6 @@ class ReportsScreen extends StatefulWidget {
 class _ReportsScreenState extends State<ReportsScreen> {
   final _repo = CashFlowRepository();
   bool _busy = false;
-  double _saldoAwal = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    AppState.activeWallet.addListener(_loadSaldo);
-    _loadSaldo();
-  }
-
-  @override
-  void dispose() {
-    AppState.activeWallet.removeListener(_loadSaldo);
-    super.dispose();
-  }
-
-  Future<void> _loadSaldo() async {
-    final walletId = AppState.activeWalletId;
-    if (walletId == null) return;
-    final s = await _repo.getSaldoAwal(walletId);
-    if (mounted) setState(() => _saldoAwal = s);
-  }
 
   void _toast(String m) {
     if (!mounted) return;
@@ -76,7 +54,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final monthly = await _repo.monthlyTotals(now.year, walletId: walletId);
     
     final file = await PdfExportService.buildReport(
-      walletName: walletName, transactions: txs, saldoAwal: _saldoAwal,
+      walletName: walletName, transactions: txs, 
+      saldoAwal: 0, // PERUBAHAN: Set 0 karena saldo awal dihapus dari UI
       totalIncome: inc, totalExpense: exp, periodStart: start, periodEnd: end,
       monthlyData: monthly, year: now.year,
     );
@@ -101,7 +80,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
     if (walletId == null) return;
     
     final all = await _repo.getTransactions(walletId: walletId, limit: 100000);
-    final file = await CsvExportService.export(walletName: walletName, transactions: all, saldoAwal: _saldoAwal);
+    final file = await CsvExportService.export(
+      walletName: walletName, transactions: all, 
+      saldoAwal: 0, // PERUBAHAN: Set 0
+    );
     
     if (file == null) return _toast('Gagal membuat CSV.');
 
@@ -124,7 +106,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final cats = await _repo.getCategories();
     final txs = await _repo.getTransactions(walletId: walletId, limit: 100000);
     
-    final jsonString = await JsonBackupService.export(categories: cats, transactions: txs, saldoAwal: _saldoAwal);
+    final jsonString = await JsonBackupService.export(
+      categories: cats, transactions: txs, 
+      saldoAwal: 0, // PERUBAHAN: Set 0
+    );
     
     final fileName = 'CashFlow_Backup_${DateTime.now().millisecondsSinceEpoch}.json';
     
@@ -198,44 +183,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
       await _repo.setSaldoAwal(walletId, parsed.saldoAwal);
       
       AppEvents.notify();
-      await _loadSaldo();
       _toast('Impor berhasil: ${parsed.transactions.length} transaksi');
     } catch (e) {
       _toast('Gagal impor: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  Future<void> _editSaldo() async {
-    final walletId = AppState.activeWalletId;
-    if (walletId == null) return;
-
-    final ctrl = TextEditingController(text: _saldoAwal.toStringAsFixed(0));
-    final res = await showDialog<double>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Saldo Awal'),
-        content: TextField(
-          controller: ctrl,
-          keyboardType: TextInputType.number,
-          // PERUBAHAN: Rp menjadi IDR
-          decoration: const InputDecoration(labelText: 'Nominal (IDR)'), 
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, double.tryParse(ctrl.text) ?? 0),
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
-    );
-    if (res != null) {
-      await _repo.setSaldoAwal(walletId, res);
-      await _loadSaldo();
-      AppEvents.notify();
-      _toast('Saldo awal diperbarui');
     }
   }
 
@@ -257,7 +209,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 builder: (context, wallet, _) {
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(bottom: 24), // Jarak agak jauh karena saldo awal dihapus
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF064E3B).withValues(alpha: 0.4) : const Color(0xFFECFDF5),
                       borderRadius: BorderRadius.circular(12),
@@ -281,111 +233,73 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 },
               ),
 
-              Container(
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.only(bottom: 24),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                child: Text('EKSPOR DOKUMEN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
+              ),
+              // PERBAIKAN RIPPLE: Menggunakan Material + shape + clipBehavior
+              Material(
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                  side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
                 ),
-                child: Row(
+                clipBehavior: Clip.antiAlias,
+                child: Column(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
-                      ),
-                      child: const Icon(Icons.savings_outlined, size: 20, color: Colors.grey),
+                    _buildFlushItem(
+                      icon: Icons.picture_as_pdf,
+                      title: 'Ekspor PDF Bulanan',
+                      subtitle: 'Laporan lengkap dengan grafik & mutasi',
+                      onTap: _exportPdf,
+                      isDark: isDark,
+                      showDivider: true,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Saldo Awal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          Text(formatCurrency(_saldoAwal), style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined, size: 20, color: Colors.grey),
-                      onPressed: _editSaldo,
+                    _buildFlushItem(
+                      icon: Icons.table_chart,
+                      title: 'Ekspor CSV',
+                      subtitle: 'Spreadsheet siap Excel/Sheets',
+                      onTap: _exportCsv,
+                      isDark: isDark,
+                      showDivider: false,
                     ),
                   ],
                 ),
               ),
 
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 8),
-                child: Text('EKSPOR DOKUMEN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
-              ),
-              Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Column(
-                    children: [
-                      _buildFlushItem(
-                        icon: Icons.picture_as_pdf,
-                        title: 'Ekspor PDF Bulanan',
-                        subtitle: 'Laporan lengkap dengan grafik & mutasi',
-                        onTap: _exportPdf,
-                        isDark: isDark,
-                        showDivider: true,
-                      ),
-                      _buildFlushItem(
-                        icon: Icons.table_chart,
-                        title: 'Ekspor CSV',
-                        subtitle: 'Spreadsheet siap Excel/Sheets',
-                        onTap: _exportCsv,
-                        isDark: isDark,
-                        showDivider: false,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              const SizedBox(height: 24),
 
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 8),
                 child: Text('CADANGAN DATA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              // PERBAIKAN RIPPLE
+              Material(
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                  side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Column(
-                    children: [
-                      _buildFlushItem(
-                        icon: Icons.cloud_upload_outlined,
-                        title: 'Cadangkan (JSON)',
-                        subtitle: 'Simpan & bagikan seluruh data',
-                        onTap: _backupJson,
-                        isDark: isDark,
-                        showDivider: true,
-                      ),
-                      _buildFlushItem(
-                        icon: Icons.restore,
-                        title: 'Pulihkan (JSON)',
-                        subtitle: 'Impor dari berkas cadangan',
-                        onTap: _importJson,
-                        isDark: isDark,
-                        showDivider: false,
-                      ),
-                    ],
-                  ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    _buildFlushItem(
+                      icon: Icons.cloud_upload_outlined,
+                      title: 'Cadangkan (JSON)',
+                      subtitle: 'Simpan & bagikan seluruh data',
+                      onTap: _backupJson,
+                      isDark: isDark,
+                      showDivider: true,
+                    ),
+                    _buildFlushItem(
+                      icon: Icons.restore,
+                      title: 'Pulihkan (JSON)',
+                      subtitle: 'Impor dari berkas cadangan',
+                      onTap: _importJson,
+                      isDark: isDark,
+                      showDivider: false,
+                    ),
+                  ],
                 ),
               ),
             ],

@@ -208,7 +208,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   }
 
   Widget _buildHairlineInput({
-    required IconData icon,
+    required Widget leading, // PERUBAHAN: dari IconData ke Widget
     required String label,
     required Widget child,
   }) {
@@ -223,11 +223,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             width: 40,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Icon(
-                icon, 
-                color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, 
-                size: 20
-              ),
+              child: leading,
             ),
           ),
           Expanded(
@@ -475,7 +471,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             const SizedBox(height: 32),
 
             _buildHairlineInput(
-              icon: Icons.title,
+              leading: Icon(Icons.title, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: 'Judul',
               child: TextFormField(
                 controller: _titleCtrl,
@@ -494,7 +490,15 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              icon: Icons.attach_money,
+              // PERUBAHAN: Menggunakan Teks IDR sebagai ganti ikon
+              leading: Text(
+                'IDR', 
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 13, 
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade500
+                )
+              ),
               label: 'Nominal',
               child: TextFormField(
                 controller: _amountCtrl,
@@ -502,8 +506,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')), _ThousandsFormatter()],
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 decoration: const InputDecoration(
-                  prefixText: 'IDR ',
-                  prefixStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.grey),
+                  // PERUBAHAN: prefixText 'IDR ' DIHAPUS
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
@@ -520,7 +523,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              icon: Icons.category_outlined,
+              leading: Icon(Icons.category_outlined, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: 'Kategori',
               child: Row(
                 children: [
@@ -549,7 +552,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              icon: Icons.calendar_today,
+              leading: Icon(Icons.calendar_today, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: 'Tanggal',
               child: InkWell(
                 onTap: _saving ? null : _pickDate,
@@ -564,7 +567,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              icon: Icons.notes,
+              leading: Icon(Icons.notes, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: 'Catatan (opsional)',
               child: TextFormField(
                 controller: _noteCtrl,
@@ -638,7 +641,6 @@ class _ThousandsFormatter extends TextInputFormatter {
     if (isUserTypingDecimal) {
       int commaIdx = raw.lastIndexOf(',');
       if (commaIdx != -1 && commaIdx == cursorPos - 1) {
-        // PERBAIKAN WARNING: Menggunakan interpolasi string
         raw = '${raw.substring(0, commaIdx)}.${raw.substring(commaIdx + 1)}';
       }
     }
@@ -673,7 +675,6 @@ class _ThousandsFormatter extends TextInputFormatter {
 
     String formattedText = formattedInteger;
     if (lastDot != -1) {
-      // PERBAIKAN WARNING: Menggunakan interpolasi string
       formattedText = '$formattedText.$decimalPart';
     }
 

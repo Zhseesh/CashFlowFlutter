@@ -208,7 +208,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   }
 
   Widget _buildHairlineInput({
-    required Widget leading, // PERUBAHAN: dari IconData ke Widget
+    required Widget leading,
     required String label,
     required Widget child,
   }) {
@@ -490,7 +490,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              // PERUBAHAN: Menggunakan Teks IDR sebagai ganti ikon
               leading: Text(
                 'IDR', 
                 style: TextStyle(
@@ -503,10 +502,9 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
               child: TextFormField(
                 controller: _amountCtrl,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')), _ThousandsFormatter()],
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')), CurrencyInputFormatter()],
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 decoration: const InputDecoration(
-                  // PERUBAHAN: prefixText 'IDR ' DIHAPUS
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
@@ -618,91 +616,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ThousandsFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.isEmpty) return newValue;
-
-    String raw = newValue.text;
-    int cursorPos = newValue.selection.baseOffset;
-
-    bool isUserTypingDecimal = false;
-    if (cursorPos > 0 && cursorPos <= raw.length) {
-      String charBeforeCursor = raw.substring(cursorPos - 1, cursorPos);
-      if (charBeforeCursor == ',' || charBeforeCursor == '.') {
-        isUserTypingDecimal = true;
-      }
-    }
-
-    if (isUserTypingDecimal) {
-      int commaIdx = raw.lastIndexOf(',');
-      if (commaIdx != -1 && commaIdx == cursorPos - 1) {
-        raw = '${raw.substring(0, commaIdx)}.${raw.substring(commaIdx + 1)}';
-      }
-    }
-
-    String noThousands = raw.replaceAll(',', '');
-
-    int lastDot = noThousands.lastIndexOf('.');
-    String integerPart = '';
-    String decimalPart = '';
-
-    if (lastDot != -1) {
-      integerPart = noThousands.substring(0, lastDot);
-      decimalPart = noThousands.substring(lastDot + 1);
-    } else {
-      integerPart = noThousands;
-    }
-
-    integerPart = integerPart.replaceAll(RegExp(r'[^0-9]'), '');
-
-    if (decimalPart.length > 2) {
-      decimalPart = decimalPart.substring(0, 2);
-    }
-
-    String formattedInteger = '';
-    if (integerPart.isNotEmpty) {
-      try {
-        formattedInteger = NumberFormat.decimalPattern('en_US').format(int.parse(integerPart));
-      } catch (e) {
-        formattedInteger = integerPart;
-      }
-    }
-
-    String formattedText = formattedInteger;
-    if (lastDot != -1) {
-      formattedText = '$formattedText.$decimalPart';
-    }
-
-    int digitsBeforeCursor = 0;
-    for (int i = 0; i < cursorPos && i < raw.length; i++) {
-      if (RegExp(r'[0-9]').hasMatch(raw[i])) digitsBeforeCursor++;
-    }
-
-    int newCursorPos = formattedText.length;
-    if (digitsBeforeCursor < formattedText.replaceAll(RegExp(r'[^0-9]'), '').length) {
-      int count = 0;
-      for (int i = 0; i < formattedText.length; i++) {
-        if (RegExp(r'[0-9]').hasMatch(formattedText[i])) {
-          count++;
-          if (count == digitsBeforeCursor) {
-            newCursorPos = i + 1;
-            if (newCursorPos < formattedText.length && formattedText[newCursorPos] == '.') {
-              newCursorPos++;
-            }
-            break;
-          }
-        }
-      }
-    }
-
-    return TextEditingValue(
-      text: formattedText,
-      selection: TextSelection.collapsed(offset: newCursorPos),
     );
   }
 }

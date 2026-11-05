@@ -2,7 +2,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
+    // Plugin kotlin-android sudah dihapus
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -43,12 +43,10 @@ android {
     signingConfigs {
         if (hasKeystore) {
             create("release") {
-              keyAlias = keystoreProperties["keyAlias"] as String
-              keyPassword = keystoreProperties["keyPassword"] as String
-              storePassword = keystoreProperties["storePassword"] as String
-              
-              // Karena disimpan di folder android/, gunakan rootProject
-              storeFile = rootProject.file("upload-keystore.jks") 
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
             }
         }
     }
@@ -66,11 +64,8 @@ android {
     }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-    }
-}
+// Blok konfigurasi kotlin { compilerOptions { ... } } sudah dihapus 
+// karena sekarang ditangani otomatis oleh Built-in Kotlin.
 
 flutter {
     source = "../.."

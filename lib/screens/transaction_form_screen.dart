@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:open_filex/open_filex.dart';
@@ -479,9 +479,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
                 decoration: const InputDecoration(
                   hintText: 'Contoh: Gaji bulanan',
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
+                  // PERBAIKAN: Menghapus border override
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -505,9 +503,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')), CurrencyInputFormatter()],
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
+                  // PERBAIKAN: Menghapus border override
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -574,9 +570,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 style: const TextStyle(fontSize: 14),
                 decoration: const InputDecoration(
                   hintText: 'Tambahkan detail...',
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
+                  // PERBAIKAN: Menghapus border override
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),

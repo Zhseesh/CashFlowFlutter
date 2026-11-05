@@ -12,6 +12,7 @@ class AppTheme {
   static ThemeData get light => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
+    // PERBAIKAN: Hanya gunakan fontFamily, biarkan TextTheme default
     fontFamily: GoogleFonts.inter().fontFamily,
     scaffoldBackgroundColor: const Color(0xFFF3F4F6),
     colorScheme: ColorScheme.fromSeed(
@@ -21,8 +22,6 @@ class AppTheme {
       surface: Colors.white,
       brightness: Brightness.light,
     ),
-    // PERBAIKAN: Casting TextTheme ke material_ui
-    textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme) as TextTheme?,
     appBarTheme: AppBarTheme(
       backgroundColor: const Color(0xFFF3F4F6),
       elevation: 0,
@@ -62,8 +61,6 @@ class AppTheme {
       surface: darkSurface,
       brightness: Brightness.dark,
     ),
-    // PERBAIKAN: Casting TextTheme ke material_ui
-    textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme) as TextTheme?,
     appBarTheme: AppBarTheme(
       backgroundColor: darkBg,
       elevation: 0,

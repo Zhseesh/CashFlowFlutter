@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../data/cashflow_repository.dart';
 import '../models/transaction.dart';
 import '../services/attachment_service.dart';
@@ -196,117 +196,121 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // PERBAIKAN: Hapus SafeArea
-    return Stack(children: [
-      ListView(
-        padding: const EdgeInsets.fromLTRB(20, 40, 20, 120), // Padding atas untuk status bar
-        children: [
-          const Text('Laporan & Data', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 20),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Stack(children: [
+          ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            children: [
+              const Text('Laporan & Data', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
 
-          ValueListenableBuilder(
-            valueListenable: AppState.activeWallet,
-            builder: (context, wallet, _) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                margin: const EdgeInsets.only(bottom: 24), 
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF064E3B).withValues(alpha: 0.4) : const Color(0xFFECFDF5),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isDark ? const Color(0xFF10B981).withValues(alpha: 0.2) : const Color(0xFFA7F3D0)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.account_box_outlined, size: 20, color: Color(0xFF10B981)),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Laporan untuk: ',
-                      style: TextStyle(fontSize: 13, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700),
+              ValueListenableBuilder(
+                valueListenable: AppState.activeWallet,
+                builder: (context, wallet, _) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    margin: const EdgeInsets.only(bottom: 24), 
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF064E3B).withValues(alpha: 0.4) : const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: isDark ? const Color(0xFF10B981).withValues(alpha: 0.2) : const Color(0xFFA7F3D0)),
                     ),
-                    Text(
-                      wallet?.name ?? "-",
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF10B981)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.account_box_outlined, size: 20, color: Color(0xFF10B981)),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Laporan untuk: ',
+                          style: TextStyle(fontSize: 13, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700),
+                        ),
+                        Text(
+                          wallet?.name ?? "-",
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF10B981)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                child: Text('EKSPOR DOKUMEN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
+              ),
+              Material(
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    _buildFlushItem(
+                      icon: Icons.picture_as_pdf,
+                      title: 'Ekspor PDF Bulanan',
+                      subtitle: 'Laporan lengkap dengan grafik & mutasi',
+                      onTap: _exportPdf,
+                      isDark: isDark,
+                      showDivider: true,
+                    ),
+                    _buildFlushItem(
+                      icon: Icons.table_chart,
+                      title: 'Ekspor CSV',
+                      subtitle: 'Spreadsheet siap Excel/Sheets',
+                      onTap: _exportCsv,
+                      isDark: isDark,
+                      showDivider: false,
                     ),
                   ],
                 ),
-              );
-            },
-          ),
+              ),
 
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 8),
-            child: Text('EKSPOR DOKUMEN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
-          ),
-          Material(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                _buildFlushItem(
-                  icon: Icons.picture_as_pdf,
-                  title: 'Ekspor PDF Bulanan',
-                  subtitle: 'Laporan lengkap dengan grafik & mutasi',
-                  onTap: _exportPdf,
-                  isDark: isDark,
-                  showDivider: true,
-                ),
-                _buildFlushItem(
-                  icon: Icons.table_chart,
-                  title: 'Ekspor CSV',
-                  subtitle: 'Spreadsheet siap Excel/Sheets',
-                  onTap: _exportCsv,
-                  isDark: isDark,
-                  showDivider: false,
-                ),
-              ],
-            ),
-          ),
+              const SizedBox(height: 24),
 
-          const SizedBox(height: 24),
-
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 8),
-            child: Text('CADANGAN DATA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
-          ),
-          Material(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                _buildFlushItem(
-                  icon: Icons.cloud_upload_outlined,
-                  title: 'Cadangkan (JSON)',
-                  subtitle: 'Simpan & bagikan seluruh data',
-                  onTap: _backupJson,
-                  isDark: isDark,
-                  showDivider: true,
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                child: Text('CADANGAN DATA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
+              ),
+              Material(
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
                 ),
-                _buildFlushItem(
-                  icon: Icons.restore,
-                  title: 'Pulihkan (JSON)',
-                  subtitle: 'Impor dari berkas cadangan',
-                  onTap: _importJson,
-                  isDark: isDark,
-                  showDivider: false,
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    _buildFlushItem(
+                      icon: Icons.cloud_upload_outlined,
+                      title: 'Cadangkan (JSON)',
+                      subtitle: 'Simpan & bagikan seluruh data',
+                      onTap: _backupJson,
+                      isDark: isDark,
+                      showDivider: true,
+                    ),
+                    _buildFlushItem(
+                      icon: Icons.restore,
+                      title: 'Pulihkan (JSON)',
+                      subtitle: 'Impor dari berkas cadangan',
+                      onTap: _importJson,
+                      isDark: isDark,
+                      showDivider: false,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              
+              const SizedBox(height: 120),
+            ],
           ),
-          
-          const SizedBox(height: 120),
-        ],
+          if (_busy)
+            Container(color: Colors.black26, child: const Center(child: CircularProgressIndicator())),
+        ]),
       ),
-      if (_busy)
-        Container(color: Colors.black26, child: const Center(child: CircularProgressIndicator())),
-    ]);
+    );
   }
 
   Widget _buildFlushItem({

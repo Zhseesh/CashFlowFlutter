@@ -31,8 +31,8 @@ class _MainShellState extends State<MainShell> {
       extendBody: true,
       floatingActionButton: _index == 0
           ? Padding(
-              // PERBAIKAN: FAB diturunkan (dari 90 ke 80) agar lebih dekat dengan navbar
-              padding: EdgeInsets.only(bottom: 80 + bottomPadding),
+              // PERBAIKAN: FAB diturunkan menjadi 50 + bottomPadding
+              padding: EdgeInsets.only(bottom: 50 + bottomPadding),
               child: FloatingActionButton(
                 onPressed: _openAddScreen,
                 backgroundColor: const Color(0xFF10B981),
@@ -52,15 +52,14 @@ class _MainShellState extends State<MainShell> {
           // NAVBAR MELAYANG (Shrink-wrap seperti Telegram)
           Positioned(
             left: 0, 
-            right: 0, // Memenuhi layar, tapi...
+            right: 0, 
             bottom: bottomPadding + 16, 
-            child: Center( // PERBAIKAN: Kita bungkus dengan Center agar container mengecil ke tengah
+            child: Center( 
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(40),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                   child: Container(
-                    // Padding luar container agar sedikit lebih tebal
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     decoration: BoxDecoration(
                       color: isDark 
@@ -79,15 +78,14 @@ class _MainShellState extends State<MainShell> {
                         )
                       ],
                     ),
-                    // PERBAIKAN: MainAxisSize.min agar lebar container hanya sebesar isinya
                     child: Row(
                       mainAxisSize: MainAxisSize.min, 
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _buildNavItem(0, Icons.grid_view_rounded, l10n.translate('dashboard')),
-                        const SizedBox(width: 4), // Jarak antar menu
+                        const SizedBox(width: 4),
                         _buildNavItem(1, Icons.insert_chart_rounded, l10n.translate('analytics')),
-                        const SizedBox(width: 4), // Jarak antar menu
+                        const SizedBox(width: 4),
                         _buildNavItem(2, Icons.description, l10n.translate('reports')),
                       ],
                     ),

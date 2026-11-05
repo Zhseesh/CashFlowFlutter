@@ -113,155 +113,152 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
 
-    // PERBAIKAN: Hapus Scaffold, gunakan SafeArea langsung
-    return SafeArea(
-      child: RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                InkWell(
-                  onTap: _openWalletManagement,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Row(
-                    children: [
-                      ValueListenableBuilder(
-                        valueListenable: AppState.activeWallet,
-                        builder: (context, wallet, _) {
-                          return Text(
-                            wallet?.name ?? l10n.translate('main_wallet'),
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.keyboard_arrow_down, size: 24, color: Colors.grey),
-                    ],
-                  ),
-                ),
-                
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.settings_outlined, size: 20),
-                    onPressed: _openSettings,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            BalanceCard(balance: _balance, income: _incomeTotal, expense: _expenseTotal),
-            const SizedBox(height: 24),
-            
-            Container(
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
-              ),
-              child: TextField(
-                controller: _searchCtrl,
-                onSubmitted: (_) => _load(),
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  hintText: l10n.translate('search_hint'),
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.calendar_month, size: 20),
-                    onPressed: _pickDateRange,
-                  ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-              ),
-            ),
-
-            if (_isFiltering)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
+    // PERBAIKAN: Menghapus SafeArea agar konten menembus bawah
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 40, 20, 120), // Padding atas untuk status bar
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                onTap: _openWalletManagement,
+                borderRadius: BorderRadius.circular(8),
                 child: Row(
                   children: [
-                    if (_dateRange != null)
-                      Chip(
-                        label: Text('${formatDate(_dateRange!.start)} - ${formatDate(_dateRange!.end)}', style: const TextStyle(fontSize: 11)),
-                        onDeleted: () { setState(() => _dateRange = null); _load(); },
-                      ),
-                    TextButton(
-                      onPressed: () { _searchCtrl.clear(); setState(() => _dateRange = null); _load(); },
-                      child: const Text('Reset', style: TextStyle(fontSize: 12)),
-                    )
+                    ValueListenableBuilder(
+                      valueListenable: AppState.activeWallet,
+                      builder: (context, wallet, _) {
+                        return Text(
+                          wallet?.name ?? l10n.translate('main_wallet'),
+                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.keyboard_arrow_down, size: 24, color: Colors.grey),
                   ],
                 ),
               ),
-
-            const SizedBox(height: 24),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.translate('recent_transactions'),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                if (_isFiltering)
-                  Text('${_transactions.length} ditemukan', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            
-            if (_loading)
-              const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
-            else if (_transactions.isEmpty)
+              
               Container(
-                padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
                 ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(_isFiltering ? Icons.search_off : Icons.receipt_long_outlined, size: 32, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.translate('no_transactions'),
-                      style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.translate('no_transactions_sub'),
-                      style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                    ),
-                  ],
+                child: IconButton(
+                  icon: const Icon(Icons.settings_outlined, size: 20),
+                  onPressed: _openSettings,
                 ),
-              )
-            else
-              ..._transactions.map((t) => TransactionTile(
-                transaction: t,
-                onTap: _openEditScreen,
-              )),
-              
-            // Jarak ekstra karena navbar sekarang melayang
-            const SizedBox(height: 120), 
-          ],
-        ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          BalanceCard(balance: _balance, income: _incomeTotal, expense: _expenseTotal),
+          const SizedBox(height: 24),
+          
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+            ),
+            child: TextField(
+              controller: _searchCtrl,
+              onSubmitted: (_) => _load(),
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: l10n.translate('search_hint'),
+                prefixIcon: const Icon(Icons.search, size: 20),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.calendar_month, size: 20),
+                  onPressed: _pickDateRange,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          ),
+
+          if (_isFiltering)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(
+                children: [
+                  if (_dateRange != null)
+                    Chip(
+                      label: Text('${formatDate(_dateRange!.start)} - ${formatDate(_dateRange!.end)}', style: const TextStyle(fontSize: 11)),
+                      onDeleted: () { setState(() => _dateRange = null); _load(); },
+                    ),
+                  TextButton(
+                    onPressed: () { _searchCtrl.clear(); setState(() => _dateRange = null); _load(); },
+                    child: const Text('Reset', style: TextStyle(fontSize: 12)),
+                  )
+                ],
+              ),
+            ),
+
+          const SizedBox(height: 24),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                l10n.translate('recent_transactions'),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              if (_isFiltering)
+                Text('${_transactions.length} ditemukan', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          if (_loading)
+            const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
+          else if (_transactions.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(_isFiltering ? Icons.search_off : Icons.receipt_long_outlined, size: 32, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.translate('no_transactions'),
+                    style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.translate('no_transactions_sub'),
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                  ),
+                ],
+              ),
+            )
+          else
+            ..._transactions.map((t) => TransactionTile(
+              transaction: t,
+              onTap: _openEditScreen,
+            )),
+            
+          const SizedBox(height: 120), 
+        ],
       ),
     );
   }

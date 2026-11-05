@@ -27,7 +27,6 @@ class _MainShellState extends State<MainShell> {
 
     return Scaffold(
       extendBody: true,
-      // FAB diletakkan di sini dan digeser ke atas (bottom: 90) agar tidak menabrak navbar
       floatingActionButton: _index == 0
           ? Padding(
               padding: const EdgeInsets.only(bottom: 90),
@@ -42,21 +41,22 @@ class _MainShellState extends State<MainShell> {
             )
           : null,
           
-      // Body menggunakan Stack agar Navbar bisa melayang di atas konten
       body: Stack(
         children: [
+          // Konten Utama
           IndexedStack(index: _index, children: _screens),
           
-          // Navbar Melayang (Telegram Style)
+          // NAVBAR MELAYANG (Custom Row)
           Positioned(
             left: 20,
             right: 20,
-            bottom: 20, // Jarak dari bawah layar
+            bottom: 20,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(40),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                 child: Container(
+                  height: 70, // Tinggi tetap
                   decoration: BoxDecoration(
                     color: isDark 
                         ? const Color(0xFF1E1E1E).withValues(alpha: 0.85) 
@@ -74,43 +74,57 @@ class _MainShellState extends State<MainShell> {
                       )
                     ],
                   ),
-                  // PERBAIKAN: Material transparan untuk mencegah background bawaan NavigationBar
-                  child: Material(
-                    color: Colors.transparent,
-                    child: NavigationBar(
-                      backgroundColor: Colors.transparent,
-                      surfaceTintColor: Colors.transparent, // Mencegah tint bawaan Material 3
-                      shadowColor: Colors.transparent,
-                      elevation: 0,
-                      height: 70,
-                      selectedIndex: _index,
-                      onDestinationSelected: (i) => setState(() => _index = i),
-                      indicatorColor: isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5),
-                      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                      destinations: [
-                        NavigationDestination(
-                          icon: const Icon(Icons.grid_view_rounded, color: Colors.grey),
-                          selectedIcon: const Icon(Icons.grid_view_rounded, color: Color(0xFF10B981)),
-                          label: l10n.translate('dashboard'),
-                        ),
-                        NavigationDestination(
-                          icon: const Icon(Icons.insert_chart_outlined_rounded, color: Colors.grey),
-                          selectedIcon: const Icon(Icons.insert_chart_rounded, color: Color(0xFF10B981)),
-                          label: l10n.translate('analytics'),
-                        ),
-                        NavigationDestination(
-                          icon: const Icon(Icons.description_outlined, color: Colors.grey),
-                          selectedIcon: const Icon(Icons.description, color: Color(0xFF10B981)),
-                          label: l10n.translate('reports'),
-                        ),
-                      ],
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNavItem(0, Icons.grid_view_rounded, l10n.translate('dashboard')),
+                      _buildNavItem(1, Icons.insert_chart_rounded, l10n.translate('analytics')),
+                      _buildNavItem(2, Icons.description, l10n.translate('reports')),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Widget custom untuk setiap ikon di navbar
+  Widget _buildNavItem(int index, IconData icon, String label) {
+    final isSelected = _index == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final color = isSelected ? const Color(0xFF10B981) : Colors.grey.shade500;
+    
+    return GestureDetector(
+      onTap: () => setState(() => _index = index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? (isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5)) 
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              label, 
+              style: TextStyle(
+                color: color, 
+                fontSize: 10, 
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal
+              )
+            ),
+          ],
+        ),
       ),
     );
   }

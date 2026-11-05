@@ -74,31 +74,37 @@ class _MainShellState extends State<MainShell> {
                       )
                     ],
                   ),
-                  child: NavigationBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    height: 70,
-                    selectedIndex: _index,
-                    onDestinationSelected: (i) => setState(() => _index = i),
-                    indicatorColor: isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5),
-                    labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                    destinations: [
-                      NavigationDestination(
-                        icon: const Icon(Icons.grid_view_rounded, color: Colors.grey),
-                        selectedIcon: const Icon(Icons.grid_view_rounded, color: Color(0xFF10B981)),
-                        label: l10n.translate('dashboard'),
-                      ),
-                      NavigationDestination(
-                        icon: const Icon(Icons.insert_chart_outlined_rounded, color: Colors.grey),
-                        selectedIcon: const Icon(Icons.insert_chart_rounded, color: Color(0xFF10B981)),
-                        label: l10n.translate('analytics'),
-                      ),
-                      NavigationDestination(
-                        icon: const Icon(Icons.description_outlined, color: Colors.grey),
-                        selectedIcon: const Icon(Icons.description, color: Color(0xFF10B981)),
-                        label: l10n.translate('reports'),
-                      ),
-                    ],
+                  // PERBAIKAN: Material transparan untuk mencegah background bawaan NavigationBar
+                  child: Material(
+                    color: Colors.transparent,
+                    child: NavigationBar(
+                      backgroundColor: Colors.transparent,
+                      surfaceTintColor: Colors.transparent, // Mencegah tint bawaan Material 3
+                      shadowColor: Colors.transparent,
+                      elevation: 0,
+                      height: 70,
+                      selectedIndex: _index,
+                      onDestinationSelected: (i) => setState(() => _index = i),
+                      indicatorColor: isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5),
+                      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                      destinations: [
+                        NavigationDestination(
+                          icon: const Icon(Icons.grid_view_rounded, color: Colors.grey),
+                          selectedIcon: const Icon(Icons.grid_view_rounded, color: Color(0xFF10B981)),
+                          label: l10n.translate('dashboard'),
+                        ),
+                        NavigationDestination(
+                          icon: const Icon(Icons.insert_chart_outlined_rounded, color: Colors.grey),
+                          selectedIcon: const Icon(Icons.insert_chart_rounded, color: Color(0xFF10B981)),
+                          label: l10n.translate('analytics'),
+                        ),
+                        NavigationDestination(
+                          icon: const Icon(Icons.description_outlined, color: Colors.grey),
+                          selectedIcon: const Icon(Icons.description, color: Color(0xFF10B981)),
+                          label: l10n.translate('reports'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

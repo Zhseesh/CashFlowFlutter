@@ -2,7 +2,8 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    // Plugin kotlin-android sudah dihapus
+    // KEMBALIKAN PLUGIN KOTLIN
+    id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -64,8 +65,12 @@ android {
     }
 }
 
-// Blok konfigurasi kotlin { compilerOptions { ... } } sudah dihapus 
-// karena sekarang ditangani otomatis oleh Built-in Kotlin.
+// KEMBALIKAN BLOK KOMPILER KOTLIN UNTUK MENGHINDARI ERROR JVMTARGET
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
 
 flutter {
     source = "../.."

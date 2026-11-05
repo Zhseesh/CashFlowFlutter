@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../l10n/app_localizations.dart';
 import 'dashboard_screen.dart';
 import 'analytics_screen.dart';
@@ -24,14 +24,14 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
-    // Mendapatkan tinggi gesture bar Android
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       extendBody: true,
+      // PERBAIKAN: Mencegah navbar terdorong ke atas saat keyboard muncul
+      resizeToAvoidBottomInset: false, 
       floatingActionButton: _index == 0
           ? Padding(
-              // PERBAIKAN: FAB diturunkan menjadi 50 + bottomPadding
               padding: EdgeInsets.only(bottom: 50 + bottomPadding),
               child: FloatingActionButton(
                 onPressed: _openAddScreen,
@@ -46,10 +46,8 @@ class _MainShellState extends State<MainShell> {
           
       body: Stack(
         children: [
-          // Konten Utama
           IndexedStack(index: _index, children: _screens),
           
-          // NAVBAR MELAYANG (Shrink-wrap seperti Telegram)
           Positioned(
             left: 0, 
             right: 0, 
@@ -99,7 +97,6 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
-  // Widget custom untuk setiap ikon di navbar
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = _index == index;
     final isDark = Theme.of(context).brightness == Brightness.dark;

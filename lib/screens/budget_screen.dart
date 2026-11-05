@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../data/cashflow_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../models/budget.dart';
@@ -70,7 +70,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
         content: TextField(
           controller: ctrl,
           keyboardType: TextInputType.number,
-          // PERUBAHAN: Rp menjadi IDR
           decoration: const InputDecoration(labelText: 'Batas Maksimal (IDR)', prefixText: 'IDR '),
           autofocus: true,
         ),
@@ -114,6 +113,11 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        // PERBAIKAN: Menambahkan leading manual
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(l10n.translate('budget'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),

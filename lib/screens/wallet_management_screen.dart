@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import '../data/cashflow_repository.dart';
 import '../models/transaction.dart';
@@ -36,9 +36,8 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
 
   Future<void> _addWallet() async {
     final nameCtrl = TextEditingController();
-    final balanceCtrl = TextEditingController(); // Dikosongkan secara default
+    final balanceCtrl = TextEditingController(); 
 
-    // Dialog form untuk Nama dan Saldo Awal
     final result = await showDialog<({String name, double balance})>(
       context: context,
       builder: (context) {
@@ -92,15 +91,12 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
 
     if (result == null || result.name.isEmpty) return;
 
-    // 1. Simpan Tabungan Baru ke Database
     final newWalletId = await _repo.insertWallet(Wallet(
       name: result.name,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     ));
 
-    // 2. Jika Saldo Awal > 0, buat transaksi Pemasukan otomatis
     if (result.balance > 0) {
-      // Cari kategori Pemasukan (default: 'Lainnya')
       final categories = await _repo.getCategories(type: 'INCOME');
       final defaultCategory = categories.firstWhere(
         (c) => c.name == 'Lainnya',
@@ -194,6 +190,11 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false, 
       appBar: AppBar(
+        // PERBAIKAN: Menambahkan leading manual
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('Kelola Tabungan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),

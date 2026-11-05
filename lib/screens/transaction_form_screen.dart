@@ -382,6 +382,11 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        // PERBAIKAN: Menambahkan leading manual
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           _isEditing ? 'Edit Transaksi' : 'Transaksi Baru', 
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
@@ -479,7 +484,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
                 decoration: const InputDecoration(
                   hintText: 'Contoh: Gaji bulanan',
-                  // PERBAIKAN: Menghapus border override
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -503,7 +507,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')), CurrencyInputFormatter()],
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 decoration: const InputDecoration(
-                  // PERBAIKAN: Menghapus border override
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -570,7 +573,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 style: const TextStyle(fontSize: 14),
                 decoration: const InputDecoration(
                   hintText: 'Tambahkan detail...',
-                  // PERBAIKAN: Menghapus border override
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),

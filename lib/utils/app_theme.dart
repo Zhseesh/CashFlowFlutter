@@ -12,7 +12,6 @@ class AppTheme {
   static ThemeData get light => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    // PERBAIKAN: Hanya gunakan fontFamily, biarkan TextTheme default
     fontFamily: GoogleFonts.inter().fontFamily,
     scaffoldBackgroundColor: const Color(0xFFF3F4F6),
     colorScheme: ColorScheme.fromSeed(
@@ -27,11 +26,7 @@ class AppTheme {
       elevation: 0,
       centerTitle: false,
       iconTheme: const IconThemeData(color: Colors.black87),
-      titleTextStyle: GoogleFonts.inter(
-        color: Colors.black87,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
+      // PERBAIKAN: titleTextStyle dihapus
     ),
     cardTheme: CardThemeData(
       color: Colors.white,
@@ -66,11 +61,7 @@ class AppTheme {
       elevation: 0,
       centerTitle: false,
       iconTheme: const IconThemeData(color: Colors.white),
-      titleTextStyle: GoogleFonts.inter(
-        color: Colors.white,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
+      // PERBAIKAN: titleTextStyle dihapus
     ),
     cardTheme: CardThemeData(
       color: darkSurface,

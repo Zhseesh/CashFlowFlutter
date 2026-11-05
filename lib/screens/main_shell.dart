@@ -24,12 +24,15 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
+    // Mendapatkan tinggi gesture bar Android agar navbar tidak tenggelam
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       extendBody: true,
       floatingActionButton: _index == 0
           ? Padding(
-              padding: const EdgeInsets.only(bottom: 90),
+              // FAB digeser ke atas menyesuaikan tinggi navbar + gesture bar
+              padding: EdgeInsets.only(bottom: 90 + bottomPadding),
               child: FloatingActionButton(
                 onPressed: _openAddScreen,
                 backgroundColor: const Color(0xFF10B981),
@@ -48,15 +51,15 @@ class _MainShellState extends State<MainShell> {
           
           // NAVBAR MELAYANG (Custom Row)
           Positioned(
-            left: 20,
-            right: 20,
-            bottom: 20,
+            left: 32, 
+            right: 32,
+            bottom: bottomPadding + 16, 
             child: ClipRRect(
               borderRadius: BorderRadius.circular(40),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                 child: Container(
-                  height: 70, // Tinggi tetap
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
                     color: isDark 
                         ? const Color(0xFF1E1E1E).withValues(alpha: 0.85) 
@@ -74,11 +77,14 @@ class _MainShellState extends State<MainShell> {
                       )
                     ],
                   ),
+                  // PERBAIKAN: Menggunakan center dan jarak statis agar tidak "LDR"
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildNavItem(0, Icons.grid_view_rounded, l10n.translate('dashboard')),
+                      const SizedBox(width: 16), // Jarak antar menu
                       _buildNavItem(1, Icons.insert_chart_rounded, l10n.translate('analytics')),
+                      const SizedBox(width: 16), // Jarak antar menu
                       _buildNavItem(2, Icons.description, l10n.translate('reports')),
                     ],
                   ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../data/cashflow_repository.dart';
 import '../models/category.dart';
 import '../utils/app_events.dart';
@@ -156,10 +156,13 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      // PERBAIKAN: Mencegah FAB memantul saat keyboard dialog muncul
       resizeToAvoidBottomInset: false,
-      
       appBar: AppBar(
+        // PERBAIKAN: Menambahkan leading manual
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('Kategori Kustom', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
         bottom: TabBar(

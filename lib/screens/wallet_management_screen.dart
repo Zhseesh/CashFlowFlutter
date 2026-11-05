@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import '../data/cashflow_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
 import '../models/wallet.dart';
 import '../utils/app_events.dart';
@@ -35,23 +36,23 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   }
 
   Future<void> _addWallet() async {
+    final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController();
-    final balanceCtrl = TextEditingController(); // Dikosongkan secara default
+    final balanceCtrl = TextEditingController(); 
 
-    // Dialog form untuk Nama dan Saldo Awal
     final result = await showDialog<({String name, double balance})>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Tambah Tabungan Baru'),
+          title: Text(l10n.translate('add_wallet_title')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nama Tabungan',
-                  hintText: 'Contoh: Dompet Utama',
+                decoration: InputDecoration(
+                  labelText: l10n.translate('wallet_name'),
+                  hintText: l10n.translate('wallet_name_hint'),
                 ),
                 textCapitalization: TextCapitalization.words,
                 autofocus: true,
@@ -64,8 +65,8 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                   CurrencyInputFormatter()
                 ],
-                decoration: const InputDecoration(
-                  labelText: 'Saldo Awal (Opsional)',
+                decoration: InputDecoration(
+                  labelText: l10n.translate('initial_balance'),
                   prefixText: 'IDR ',
                   hintText: '0.00',
                 ),
@@ -75,7 +76,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context), 
-              child: const Text('Batal')
+              child: Text(l10n.translate('cancel'))
             ),
             FilledButton(
               onPressed: () {
@@ -83,7 +84,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                 final balance = double.tryParse(balanceStr) ?? 0.0;
                 Navigator.pop(context, (name: nameCtrl.text.trim(), balance: balance));
               },
-              child: const Text('Simpan'),
+              child: Text(l10n.translate('save')),
             ),
           ],
         );
@@ -92,15 +93,12 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
 
     if (result == null || result.name.isEmpty) return;
 
-    // 1. Simpan Tabungan Baru ke Database
     final newWalletId = await _repo.insertWallet(Wallet(
       name: result.name,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     ));
 
-    // 2. Jika Saldo Awal > 0, buat transaksi Pemasukan otomatis
     if (result.balance > 0) {
-      // Cari kategori Pemasukan (default: 'Lainnya')
       final categories = await _repo.getCategories(type: 'INCOME');
       final defaultCategory = categories.firstWhere(
         (c) => c.name == 'Lainnya',
@@ -125,21 +123,22 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   }
 
   Future<void> _editWallet(Wallet w) async {
+    final l10n = AppLocalizations.of(context)!;
     final ctrl = TextEditingController(text: w.name);
     final name = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Edit Nama Tabungan'),
+        title: Text(l10n.translate('edit_category')),
         content: TextField(
           controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Nama Tabungan'),
+          decoration: InputDecoration(labelText: l10n.translate('wallet_name')),
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.translate('cancel'))),
           FilledButton(
             onPressed: () => Navigator.pop(context, ctrl.text.trim()),
-            child: const Text('Simpan'),
+            child: Text(l10n.translate('save')),
           ),
         ],
       ),
@@ -154,9 +153,10 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   }
 
   Future<void> _deleteWallet(Wallet w) async {
+    final l10n = AppLocalizations.of(context)!;
     if (_wallets.length == 1) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tidak bisa menghapus tabungan terakhir')),
+        SnackBar(content: Text(l10n.translate('cannot_delete_last_wallet'))),
       );
       return;
     }
@@ -164,14 +164,14 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Hapus Tabungan?'),
-        content: Text('Semua transaksi di "${w.name}" akan dihapus permanen.'),
+        title: Text(l10n.translate('delete_wallet_confirm')),
+        content: Text('${l10n.translate('delete_wallet_msg')} "${w.name}" ${l10n.translate('delete_wallet_msg2')}'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.translate('cancel'))),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hapus'),
+            child: Text(l10n.translate('delete')),
           ),
         ],
       ),
@@ -190,11 +190,16 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       resizeToAvoidBottomInset: false, 
       appBar: AppBar(
-        title: const Text('Kelola Tabungan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(l10n.translate('manage_wallet'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: _loading
@@ -236,13 +241,14 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
           side: BorderSide(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
         ),
         icon: const Icon(Icons.add),
-        label: const Text('Tabungan', style: TextStyle(fontWeight: FontWeight.bold)),
+        label: Text(l10n.translate('wallet'), style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }
 
   Widget _buildWalletTile(Wallet w, bool isDark) {
     final isActive = AppState.activeWallet.value?.id == w.id;
+    final l10n = AppLocalizations.of(context)!;
     
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -275,7 +281,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
         ),
       ),
       subtitle: Text(
-        'Dibuat: ${formatDate(DateTime.fromMillisecondsSinceEpoch(w.createdAt))}',
+        '${l10n.translate('created_at')} ${formatDate(DateTime.fromMillisecondsSinceEpoch(w.createdAt))}',
         style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
       ),
       trailing: Row(

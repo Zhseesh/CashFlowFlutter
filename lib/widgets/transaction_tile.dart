@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../models/transaction.dart';
 import '../utils/formatters.dart';
 
@@ -34,12 +34,13 @@ class TransactionTile extends StatelessWidget {
         ],
       ),
       child: Material(
+        // PERBAIKAN: Warna menyesuaikan Dark Mode
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
         ),
-        clipBehavior: Clip.antiAlias, // Kunci agar ripple rapi
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap != null ? () => onTap!(transaction) : null,
           child: Padding(

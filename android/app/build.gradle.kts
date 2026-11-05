@@ -2,6 +2,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    // KEMBALIKAN PLUGIN KOTLIN
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -43,12 +44,10 @@ android {
     signingConfigs {
         if (hasKeystore) {
             create("release") {
-              keyAlias = keystoreProperties["keyAlias"] as String
-              keyPassword = keystoreProperties["keyPassword"] as String
-              storePassword = keystoreProperties["storePassword"] as String
-              
-              // Karena disimpan di folder android/, gunakan rootProject
-              storeFile = rootProject.file("upload-keystore.jks") 
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
             }
         }
     }
@@ -66,6 +65,7 @@ android {
     }
 }
 
+// KEMBALIKAN BLOK KOMPILER KOTLIN UNTUK MENGHINDARI ERROR JVMTARGET
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)

@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
   
   # UI & Icons
+  material_ui: ^1.10.0        # <-- TAMBAHAN: Wajib karena kita import langsung
   cupertino_icons: ^1.0.6
   google_fonts: ^9.0.0
   fl_chart: ^1.3.0
@@ -25,7 +26,7 @@ dependencies:
 
   # Export & Sharing
   pdf: ^3.13.1
-  share_plus: ^13.3.1 # Cek pub.dev jika ada versi lebih baru
+  share_plus: ^13.3.1
   file_picker: ^13.3.0
   open_filex: ^5.0.0
 

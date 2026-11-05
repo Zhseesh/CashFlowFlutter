@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/theme_manager.dart';
 import 'about_screen.dart';
@@ -32,10 +32,9 @@ class SettingsScreen extends StatelessWidget {
                         ? l10n.translate('light') 
                         : l10n.translate('dark');
 
-                // PERBAIKAN: Seluruh ListTile dibungkus PopupMenuButton
                 return PopupMenuButton<ThemeMode>(
                   position: PopupMenuPosition.under, 
-                  tooltip: '', // Menghilangkan tulisan "Show menu"
+                  tooltip: '', 
                   initialValue: mode,
                   onSelected: (v) => ThemeManager.setTheme(v),
                   itemBuilder: (context) => [
@@ -47,7 +46,7 @@ class SettingsScreen extends StatelessWidget {
                     leading: const Icon(Icons.palette_outlined, color: Color(0xFF10B981)),
                     title: Text(l10n.translate('appearance'), style: const TextStyle(fontSize: 14)),
                     trailing: Row(
-                      mainAxisSize: MainAxisSize.min, // Lebar pas dengan teks
+                      mainAxisSize: MainAxisSize.min, 
                       children: [
                         Text(
                           currentText,
@@ -78,10 +77,9 @@ class SettingsScreen extends StatelessWidget {
                     ? l10n.translate('indonesian') 
                     : l10n.translate('english');
 
-                // PERBAIKAN: Seluruh ListTile dibungkus PopupMenuButton
                 return PopupMenuButton<String>(
                   position: PopupMenuPosition.under, 
-                  tooltip: '', // Menghilangkan tulisan "Show menu"
+                  tooltip: '', 
                   initialValue: loc.languageCode,
                   onSelected: (v) => ThemeManager.setLocale(v),
                   itemBuilder: (context) => [
@@ -142,7 +140,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // Wrapper untuk memastikan ripple rapi dan tidak bocor
   Widget _buildMaterialWrapper({required bool isDark, required Widget child}) {
     return Material(
       color: isDark ? const Color(0xFF1E1E1E) : Colors.white,

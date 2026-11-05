@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeManager {
@@ -13,7 +13,6 @@ class ThemeManager {
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     
-    // Load Theme
     final savedTheme = prefs.getString(_themeKey);
     if (savedTheme == 'light') {
       themeMode.value = ThemeMode.light;
@@ -23,7 +22,6 @@ class ThemeManager {
       themeMode.value = ThemeMode.system;
     }
 
-    // Load Locale
     final savedLocale = prefs.getString(_localeKey);
     if (savedLocale == 'en') {
       locale.value = const Locale('en');

@@ -1,14 +1,16 @@
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-// Menggunakan locale 'en_US' untuk format koma (,) dan titik (.)
+// Format standar dengan IDR
 final _currency = NumberFormat.currency(locale: 'en_US', symbol: 'IDR ', decimalDigits: 2);
+// Format pendek tanpa IDR (khusus untuk widget mini)
+final _currencyShort = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2);
 final _date = DateFormat('dd MMM yyyy', 'id_ID');
 
 String formatCurrency(num v) => _currency.format(v);
+String formatCurrencyShort(num v) => _currencyShort.format(v).trim();
 String formatDate(DateTime d) => _date.format(d);
 
-// Formatter pintar untuk input angka (ribuan & desimal)
 class CurrencyInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {

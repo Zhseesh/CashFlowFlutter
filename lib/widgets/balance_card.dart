@@ -65,7 +65,6 @@ class BalanceCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                // PERUBAHAN: Rp menjadi IDR
                 isHidden ? 'IDR ••••••••' : formatCurrency(balance), 
                 style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold, letterSpacing: -1)
               ),
@@ -81,8 +80,7 @@ class BalanceCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      // PERUBAHAN: Rp menjadi IDR
-                      child: _buildMini(Icons.arrow_downward, l10n.translate('income'), isHidden ? 'IDR ••••••' : formatCurrency(income))
+                      child: _buildMini(Icons.arrow_downward, l10n.translate('income'), income, isHidden)
                     ),
                     Container(
                       width: 1,
@@ -91,8 +89,7 @@ class BalanceCard extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                     ),
                     Expanded(
-                      // PERUBAHAN: Rp menjadi IDR
-                      child: _buildMini(Icons.arrow_upward, l10n.translate('expense'), isHidden ? 'IDR ••••••' : formatCurrency(expense))
+                      child: _buildMini(Icons.arrow_upward, l10n.translate('expense'), expense, isHidden)
                     ),
                   ],
                 ),
@@ -104,7 +101,7 @@ class BalanceCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMini(IconData icon, String label, String value) {
+  Widget _buildMini(IconData icon, String label, double val, bool isHidden) {
     return Row(
       children: [
         Container(
@@ -122,7 +119,15 @@ class BalanceCard extends StatelessWidget {
             children: [
               Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 9, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+              // PERBAIKAN: Menggunakan FittedBox dan formatCurrencyShort
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  isHidden ? '••••••' : formatCurrencyShort(val), 
+                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold), 
+                ),
+              ),
             ],
           ),
         ),

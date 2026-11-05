@@ -26,6 +26,10 @@ class AppLocalizations {
       'search_hint': 'Cari transaksi...',
       'no_transactions': 'Belum ada transaksi',
       'no_transactions_sub': 'Catat pengeluaran pertamamu hari ini',
+      // Analytics
+      'yearly_chart': 'Grafik Tahunan',
+      'expense_breakdown': 'Rincian Pengeluaran',
+      'no_expense_month': 'Belum ada pengeluaran bulan ini.',
       // Settings
       'settings': 'Pengaturan',
       'appearance': 'Tampilan',
@@ -111,11 +115,11 @@ class AppLocalizations {
       'delete_category_msg': 'akan dihapus. Transaksi lama tidak akan terpengaruh.',
       // Wallet Management
       'manage_wallet': 'Kelola Tabungan',
-      'add_wallet': 'Tambah Tabungan Baru',
+      'add_wallet_title': 'Tambah Tabungan Baru',
       'wallet_name': 'Nama Tabungan',
       'wallet_name_hint': 'Contoh: Dompet Utama',
       'initial_balance': 'Saldo Awal (Opsional)',
-      'created_at': 'Dibuat',
+      'created_at': 'Dibuat:',
       'delete_wallet_confirm': 'Hapus Tabungan?',
       'delete_wallet_msg': 'Semua transaksi di',
       'delete_wallet_msg2': 'akan dihapus permanen.',
@@ -136,6 +140,10 @@ class AppLocalizations {
       'search_hint': 'Search transactions...',
       'no_transactions': 'No transactions yet',
       'no_transactions_sub': 'Record your first expense today',
+      // Analytics
+      'yearly_chart': 'Yearly Chart',
+      'expense_breakdown': 'Expense Breakdown',
+      'no_expense_month': 'No expenses this month.',
       // Settings
       'settings': 'Settings',
       'appearance': 'Appearance',
@@ -221,11 +229,11 @@ class AppLocalizations {
       'delete_category_msg': 'will be deleted. Old transactions will not be affected.',
       // Wallet Management
       'manage_wallet': 'Manage Wallets',
-      'add_wallet': 'Add New Wallet',
+      'add_wallet_title': 'Add New Wallet',
       'wallet_name': 'Wallet Name',
       'wallet_name_hint': 'e.g., Main Wallet',
       'initial_balance': 'Initial Balance (Optional)',
-      'created_at': 'Created',
+      'created_at': 'Created:',
       'delete_wallet_confirm': 'Delete Wallet?',
       'delete_wallet_msg': 'All transactions in',
       'delete_wallet_msg2': 'will be permanently deleted.',

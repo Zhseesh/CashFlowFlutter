@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:intl/intl.dart';
 import '../data/cashflow_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
 
@@ -17,8 +19,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Map<int, ({double income, double expense})> _monthly = {};
   List<({String category, double total})> _breakdown = [];
   bool _loading = true;
-
-  static const _monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
   @override
   void initState() {
@@ -62,9 +62,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     final totalBreak = _breakdown.fold<double>(0, (p, e) => p + e.total);
+    
+    // PERBAIKAN: Menggunakan nama bulan sesuai bahasa
+    final monthNames = List.generate(12, (i) => 
+      DateFormat('MMM', Localizations.localeOf(context).languageCode).format(DateTime(2024, i + 1, 1))
+    );
 
-    // PERBAIKAN: Scaffold transparan
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
@@ -73,7 +78,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             : ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 children: [
-                  const Text('Analisis', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  Text(l10n.translate('analytics'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
 
                   Container(
@@ -90,7 +95,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Grafik Tahunan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            Text(l10n.translate('yearly_chart'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
@@ -145,7 +150,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                     showTitles: true,
                                     getTitlesWidget: (v, _) => Padding(
                                       padding: const EdgeInsets.only(top: 8),
-                                      child: Text(_monthNames[v.toInt() - 1], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+                                      child: Text(monthNames[v.toInt() - 1], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
                                     ),
                                   ),
                                 ),
@@ -192,7 +197,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Rincian Pengeluaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            Text(l10n.translate('expense_breakdown'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                             DropdownButtonHideUnderline(
                               child: DropdownButton<int>(
                                 value: _month,
@@ -200,7 +205,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
                                 items: List.generate(12, (i) => DropdownMenuItem(
                                   value: i + 1, 
-                                  child: Text(_monthNames[i]),
+                                  child: Text(monthNames[i]),
                                 )),
                                 onChanged: (v) { setState(() => _month = v!); _load(); },
                               ),
@@ -209,10 +214,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         ),
                         const SizedBox(height: 16),
                         if (_breakdown.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
                             child: Center(
-                              child: Text('Belum ada pengeluaran bulan ini.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                              child: Text(l10n.translate('no_expense_month'), style: const TextStyle(color: Colors.grey, fontSize: 12)),
                             ),
                           )
                         else

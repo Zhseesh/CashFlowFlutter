@@ -173,19 +173,20 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   }
 
   Future<void> _delete() async {
+    final l10n = AppLocalizations.of(context)!;
     final id = widget.editing?.id;
     if (id == null) return;
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Hapus Transaksi?'),
-        content: Text('"${widget.editing!.title}" akan dihapus permanen.'),
+        title: Text(l10n.translate('delete_confirm')),
+        content: Text('"${widget.editing!.title}" ${l10n.translate('delete_msg')}'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.translate('cancel'))),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)), 
             onPressed: () => Navigator.pop(context, true), 
-            child: const Text('Hapus')
+            child: Text(l10n.translate('delete'))
           ),
         ],
       ),
@@ -207,6 +208,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     }
   }
 
+  // PERBAIKAN: Menghapus border dari Container, menggunakan border dari AppTheme
   Widget _buildHairlineInput({
     required Widget leading,
     required String label,
@@ -227,32 +229,21 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
           ),
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade300,
-                    width: 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                   ),
                 ),
-              ),
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  child,
-                ],
-              ),
+                const SizedBox(height: 4),
+                child,
+              ],
             ),
           ),
         ],
@@ -262,12 +253,13 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
   Widget _buildAttachmentSection() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'BUKTI TRANSFER',
+          l10n.translate('attachment').toUpperCase(),
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w600,
@@ -296,8 +288,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 child: const Icon(Icons.attach_file, color: Color(0xFF10B981), size: 16),
               ),
               const SizedBox(width: 12),
-              const Expanded(
-                child: Text('Lampiran tersimpan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF059669))),
+              Expanded(
+                child: Text(l10n.translate('saved_attachment'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF059669))),
               ),
               IconButton(
                 icon: const Icon(Icons.visibility_outlined, size: 20),
@@ -337,7 +329,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(p.basename(path), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
-                    const Text('Belum disimpan', style: TextStyle(fontSize: 10, color: Colors.orange)),
+                    Text(l10n.translate('unsaved_attachment'), style: const TextStyle(fontSize: 10, color: Colors.orange)),
                   ],
                 ),
               ),
@@ -361,7 +353,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           child: OutlinedButton.icon(
             onPressed: _saving ? null : _pickAttachment,
             icon: const Icon(Icons.add, size: 18),
-            label: const Text('Tambah Bukti Transfer'),
+            label: Text(l10n.translate('add_attachment')),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF10B981),
               padding: const EdgeInsets.symmetric(vertical: 14),
@@ -382,20 +374,19 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        // PERBAIKAN: Menambahkan leading manual
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          _isEditing ? 'Edit Transaksi' : 'Transaksi Baru', 
+          _isEditing ? l10n.translate('edit_transaction') : l10n.translate('new_transaction'), 
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
         ),
         centerTitle: true,
         actions: [
           if (_isEditing)
             IconButton(
-              tooltip: 'Hapus',
+              tooltip: l10n.translate('delete'),
               icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
               onPressed: _saving ? null : _delete,
             ),
@@ -477,17 +468,17 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
             _buildHairlineInput(
               leading: Icon(Icons.title, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
-              label: 'Judul',
+              label: l10n.translate('title'),
               child: TextFormField(
                 controller: _titleCtrl,
                 textCapitalization: TextCapitalization.sentences,
                 style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-                decoration: const InputDecoration(
-                  hintText: 'Contoh: Gaji bulanan',
+                decoration: InputDecoration(
+                  hintText: l10n.translate('title_hint'),
                   isDense: true,
-                  contentPadding: EdgeInsets.zero,
+                  contentPadding: const EdgeInsets.only(bottom: 8),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Judul wajib diisi' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
               ),
             ),
 
@@ -500,7 +491,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                   color: isDark ? Colors.grey.shade400 : Colors.grey.shade500
                 )
               ),
-              label: 'Nominal',
+              label: l10n.translate('amount'),
               child: TextFormField(
                 controller: _amountCtrl,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -508,12 +499,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 decoration: const InputDecoration(
                   isDense: true,
-                  contentPadding: EdgeInsets.zero,
+                  contentPadding: EdgeInsets.only(bottom: 8),
                 ),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Nominal wajib diisi';
+                  if (v == null || v.isEmpty) return 'Wajib diisi';
                   final n = double.tryParse(v.replaceAll(',', ''));
-                  if (n == null || n <= 0) return 'Nominal tidak valid';
+                  if (n == null || n <= 0) return 'Tidak valid';
                   return null;
                 },
               ),
@@ -521,7 +512,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
             _buildHairlineInput(
               leading: Icon(Icons.category_outlined, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
-              label: 'Kategori',
+              label: l10n.translate('category'),
               child: Row(
                 children: [
                   Expanded(
@@ -537,7 +528,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Kelola Kategori',
+                    tooltip: l10n.translate('manage_category'),
                     icon: const Icon(Icons.tune, size: 20, color: Color(0xFF10B981)),
                     onPressed: _saving ? null : () async {
                       await Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryManagementScreen()));
@@ -550,31 +541,37 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
             _buildHairlineInput(
               leading: Icon(Icons.calendar_today, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
-              label: 'Tanggal',
+              label: l10n.translate('date'),
               child: InkWell(
                 onTap: _saving ? null : _pickDate,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(formatDate(_date), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                    const Icon(Icons.edit_outlined, size: 16, color: Colors.grey),
-                  ],
+                child: Container(
+                  padding: const EdgeInsets.only(bottom: 8, top: 4),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade300, width: 1)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(formatDate(_date), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                      const Icon(Icons.edit_outlined, size: 16, color: Colors.grey),
+                    ],
+                  ),
                 ),
               ),
             ),
 
             _buildHairlineInput(
               leading: Icon(Icons.notes, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
-              label: 'Catatan (opsional)',
+              label: l10n.translate('note'),
               child: TextFormField(
                 controller: _noteCtrl,
                 maxLines: 2,
                 textCapitalization: TextCapitalization.sentences,
                 style: const TextStyle(fontSize: 14),
-                decoration: const InputDecoration(
-                  hintText: 'Tambahkan detail...',
+                decoration: InputDecoration(
+                  hintText: l10n.translate('note_hint'),
                   isDense: true,
-                  contentPadding: EdgeInsets.zero,
+                  contentPadding: const EdgeInsets.only(bottom: 8),
                 ),
               ),
             ),
@@ -607,7 +604,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
               ),
               child: _saving
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(_isEditing ? 'Perbarui' : l10n.translate('save'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  : Text(_isEditing ? l10n.translate('update') : l10n.translate('save'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
         ),

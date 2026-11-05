@@ -3,7 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:intl/intl.dart';
 import '../data/cashflow_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
 import '../services/attachment_service.dart';
 import '../services/csv_export_service.dart';
@@ -45,19 +47,66 @@ class _ReportsScreenState extends State<ReportsScreen> {
     if (walletId == null) return;
 
     final now = DateTime.now();
-    final start = DateTime(now.year, now.month, 1);
-    final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    int selectedMonth = now.month;
+    int selectedYear = now.year;
+
+    final result = await showDialog<({int month, int year})>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Pilih Periode Laporan'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // PERBAIKAN: Menggunakan initialValue
+              DropdownButtonFormField<int>(
+                initialValue: selectedMonth,
+                decoration: const InputDecoration(labelText: 'Bulan'),
+                items: List.generate(12, (i) => DropdownMenuItem(
+                  value: i + 1,
+                  child: Text(DateFormat('MMMM', 'id_ID').format(DateTime(2024, i + 1, 1))),
+                )),
+                onChanged: (v) => selectedMonth = v!,
+              ),
+              const SizedBox(height: 12),
+              // PERBAIKAN: Menggunakan initialValue
+              DropdownButtonFormField<int>(
+                initialValue: selectedYear,
+                decoration: const InputDecoration(labelText: 'Tahun'),
+                items: List.generate(10, (i) => DropdownMenuItem(
+                  value: now.year - i,
+                  child: Text('${now.year - i}'),
+                )),
+                onChanged: (v) => selectedYear = v!,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, (month: selectedMonth, year: selectedYear)),
+              child: const Text('Ekspor'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    final start = DateTime(result.year, result.month, 1);
+    final end = DateTime(result.year, result.month + 1, 0, 23, 59, 59);
     
     final txs = await _repo.getTransactions(walletId: walletId, from: start, to: end, limit: 10000);
     final inc = await _repo.totalByType('INCOME', walletId: walletId, from: start, to: end);
     final exp = await _repo.totalByType('EXPENSE', walletId: walletId, from: start, to: end);
-    final monthly = await _repo.monthlyTotals(now.year, walletId: walletId);
+    final monthly = await _repo.monthlyTotals(result.year, walletId: walletId);
     
     final file = await PdfExportService.buildReport(
       walletName: walletName, transactions: txs, 
       saldoAwal: 0, 
       totalIncome: inc, totalExpense: exp, periodStart: start, periodEnd: end,
-      monthlyData: monthly, year: now.year,
+      monthlyData: monthly, year: result.year,
     );
 
     if (file == null) return _toast('Gagal membuat PDF.');
@@ -71,7 +120,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
       bytes: bytes,
     );
 
-    if (outputFile != null) _toast('Berhasil disimpan!');
+    // PERBAIKAN: Guard mounted sebelum akses context
+    if (outputFile != null) {
+      if (!mounted) return;
+      _toast(AppLocalizations.of(context)!.translate('saved_success'));
+    }
   }
 
   Future<void> _exportCsv() async {
@@ -96,7 +149,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
       bytes: bytes,
     );
 
-    if (outputFile != null) _toast('Berhasil disimpan!');
+    // PERBAIKAN: Guard mounted sebelum akses context
+    if (outputFile != null) {
+      if (!mounted) return;
+      _toast(AppLocalizations.of(context)!.translate('saved_success'));
+    }
   }
 
   Future<void> _backupJson() async {
@@ -119,13 +176,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
       bytes: Uint8List.fromList(utf8.encode(jsonString)),
     );
 
-    if (outputFile != null) _toast('Berhasil disimpan!');
+    // PERBAIKAN: Guard mounted sebelum akses context
+    if (outputFile != null) {
+      if (!mounted) return;
+      _toast(AppLocalizations.of(context)!.translate('saved_success'));
+    }
   }
 
   Future<void> _importJson() async {
     final walletId = AppState.activeWalletId;
     if (walletId == null) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final res = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['json']);
     if (res.isEmpty) return;
     final path = res.first.path;
@@ -138,12 +200,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final mode = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Impor Cadangan'),
-        content: Text('Ditemukan ${parsed.transactions.length} transaksi. Pilih mode impor:'),
+        title: Text(l10n.translate('import_confirm')),
+        content: Text('${l10n.translate('import_msg')} (${parsed.transactions.length} transaksi)'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          OutlinedButton(onPressed: () => Navigator.pop(context, 'append'), child: const Text('Tumpuk')),
-          FilledButton(onPressed: () => Navigator.pop(context, 'replace'), child: const Text('Ganti Semua')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.translate('cancel'))),
+          OutlinedButton(onPressed: () => Navigator.pop(context, 'append'), child: Text(l10n.translate('append'))),
+          FilledButton(onPressed: () => Navigator.pop(context, 'replace'), child: Text(l10n.translate('replace'))),
         ],
       ),
     );
@@ -184,7 +246,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       await _repo.setSaldoAwal(walletId, parsed.saldoAwal);
       
       AppEvents.notify();
-      _toast('Impor berhasil: ${parsed.transactions.length} transaksi');
+      _toast('${l10n.translate('import_success')}: ${parsed.transactions.length}');
     } catch (e) {
       _toast('Gagal impor: $e');
     } finally {
@@ -195,6 +257,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -203,7 +266,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             children: [
-              const Text('Laporan & Data', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              Text(l10n.translate('reports_data'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
 
               ValueListenableBuilder(
@@ -222,7 +285,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         const Icon(Icons.account_box_outlined, size: 20, color: Color(0xFF10B981)),
                         const SizedBox(width: 12),
                         Text(
-                          'Laporan untuk: ',
+                          '${l10n.translate('report_for')} ',
                           style: TextStyle(fontSize: 13, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700),
                         ),
                         Text(
@@ -237,7 +300,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 8),
-                child: Text('EKSPOR DOKUMEN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
+                child: Text(l10n.translate('export_document').toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
               ),
               Material(
                 color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
@@ -250,16 +313,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   children: [
                     _buildFlushItem(
                       icon: Icons.picture_as_pdf,
-                      title: 'Ekspor PDF Bulanan',
-                      subtitle: 'Laporan lengkap dengan grafik & mutasi',
+                      title: l10n.translate('export_pdf'),
+                      subtitle: l10n.translate('export_pdf_sub'),
                       onTap: _exportPdf,
                       isDark: isDark,
                       showDivider: true,
                     ),
                     _buildFlushItem(
                       icon: Icons.table_chart,
-                      title: 'Ekspor CSV',
-                      subtitle: 'Spreadsheet siap Excel/Sheets',
+                      title: l10n.translate('export_csv'),
+                      subtitle: l10n.translate('export_csv_sub'),
                       onTap: _exportCsv,
                       isDark: isDark,
                       showDivider: false,
@@ -272,7 +335,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 8),
-                child: Text('CADANGAN DATA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
+                child: Text(l10n.translate('backup_data').toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey.shade500)),
               ),
               Material(
                 color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
@@ -285,16 +348,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   children: [
                     _buildFlushItem(
                       icon: Icons.cloud_upload_outlined,
-                      title: 'Cadangkan (JSON)',
-                      subtitle: 'Simpan & bagikan seluruh data',
+                      title: l10n.translate('backup_json'),
+                      subtitle: l10n.translate('backup_json_sub'),
                       onTap: _backupJson,
                       isDark: isDark,
                       showDivider: true,
                     ),
                     _buildFlushItem(
                       icon: Icons.restore,
-                      title: 'Pulihkan (JSON)',
-                      subtitle: 'Impor dari berkas cadangan',
+                      title: l10n.translate('restore_json'),
+                      subtitle: l10n.translate('restore_json_sub'),
                       onTap: _importJson,
                       isDark: isDark,
                       showDivider: false,

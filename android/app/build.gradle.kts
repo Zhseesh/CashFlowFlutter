@@ -13,6 +13,8 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+val hasKeystore = keystorePropertiesFile.exists()
+
 android {
     namespace = "com.zsheesh.cashflow"
     compileSdk = flutter.compileSdkVersion
@@ -25,10 +27,10 @@ android {
 
     defaultConfig {
         applicationId = "com.zsheesh.cashflow"
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = flutterVersionCode
-        versionName = flutterVersionName
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
     }
 
     signingConfigs {

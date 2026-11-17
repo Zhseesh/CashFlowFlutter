@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/transaction.dart';
 import '../utils/formatters.dart';
 
@@ -17,7 +18,7 @@ class TransactionTile extends StatelessWidget {
     final isIncome = transaction.isIncome;
     final color = isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     final sign = isIncome ? '+' : '-';
-    final icon = isIncome ? Icons.south_west : Icons.north_east;
+    final icon = isIncome ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -34,7 +35,6 @@ class TransactionTile extends StatelessWidget {
         ],
       ),
       child: Material(
-        // PERBAIKAN: Warna menyesuaikan Dark Mode
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -79,7 +79,7 @@ class TransactionTile extends StatelessWidget {
                           ),
                           if (transaction.hasAttachment) ...[
                             const SizedBox(width: 4),
-                            Icon(Icons.attach_file, size: 11, color: Colors.grey.shade500),
+                            Icon(LucideIcons.paperclip, size: 11, color: Colors.grey.shade500),
                           ],
                         ],
                       ),
@@ -93,7 +93,7 @@ class TransactionTile extends StatelessWidget {
                 ),
                 if (onTap != null) ...[
                   const SizedBox(width: 4),
-                  Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey.shade400),
+                  Icon(LucideIcons.chevronRight, size: 18, color: Colors.grey.shade400),
                 ],
               ],
             ),

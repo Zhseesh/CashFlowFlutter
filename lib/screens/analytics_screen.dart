@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import '../data/cashflow_repository.dart';
 import '../l10n/app_localizations.dart';
@@ -65,7 +66,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final totalBreak = _breakdown.fold<double>(0, (p, e) => p + e.total);
     
-    // PERBAIKAN: Menggunakan nama bulan sesuai bahasa
     final monthNames = List.generate(12, (i) => 
       DateFormat('MMM', Localizations.localeOf(context).languageCode).format(DateTime(2024, i + 1, 1))
     );
@@ -108,14 +108,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                   IconButton(
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
-                                    icon: const Icon(Icons.chevron_left, size: 16),
+                                    icon: const Icon(LucideIcons.chevronLeft, size: 16),
                                     onPressed: () { setState(() => _year--); _load(); },
                                   ),
                                   Text('$_year', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                                   IconButton(
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
-                                    icon: const Icon(Icons.chevron_right, size: 16),
+                                    icon: const Icon(LucideIcons.chevronRight, size: 16),
                                     onPressed: () { setState(() => _year++); _load(); },
                                   ),
                                 ],
@@ -201,7 +201,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             DropdownButtonHideUnderline(
                               child: DropdownButton<int>(
                                 value: _month,
-                                icon: const Icon(Icons.keyboard_arrow_down, size: 16),
+                                icon: const Icon(LucideIcons.chevronDown, size: 16),
                                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
                                 items: List.generate(12, (i) => DropdownMenuItem(
                                   value: i + 1, 

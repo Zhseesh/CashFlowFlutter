@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/cashflow_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
@@ -196,7 +197,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
       resizeToAvoidBottomInset: false, 
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(l10n.translate('manage_wallet'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -240,7 +241,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
         ),
-        icon: const Icon(Icons.add),
+        icon: const Icon(LucideIcons.plus),
         label: Text(l10n.translate('wallet'), style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
@@ -267,7 +268,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
           border: isActive ? null : Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
         ),
         child: Icon(
-          isActive ? Icons.check : Icons.account_balance_wallet_outlined,
+          isActive ? LucideIcons.check : LucideIcons.wallet,
           color: isActive ? const Color(0xFF10B981) : Colors.grey,
           size: 20,
         ),
@@ -288,13 +289,13 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: const Icon(Icons.edit_outlined, size: 20),
+            icon: const Icon(LucideIcons.pencil, size: 20),
             color: Colors.grey,
             onPressed: () => _editWallet(w),
           ),
           if (_wallets.length > 1)
             IconButton(
-              icon: const Icon(Icons.delete_outline, size: 20),
+              icon: const Icon(LucideIcons.trash2, size: 20),
               color: Colors.grey,
               onPressed: () => _deleteWallet(w),
             ),

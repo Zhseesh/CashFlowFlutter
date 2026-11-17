@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import '../data/cashflow_repository.dart';
 import '../l10n/app_localizations.dart';
@@ -58,7 +59,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // PERBAIKAN: Menggunakan initialValue
               DropdownButtonFormField<int>(
                 initialValue: selectedMonth,
                 decoration: const InputDecoration(labelText: 'Bulan'),
@@ -69,7 +69,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 onChanged: (v) => selectedMonth = v!,
               ),
               const SizedBox(height: 12),
-              // PERBAIKAN: Menggunakan initialValue
               DropdownButtonFormField<int>(
                 initialValue: selectedYear,
                 decoration: const InputDecoration(labelText: 'Tahun'),
@@ -120,7 +119,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
       bytes: bytes,
     );
 
-    // PERBAIKAN: Guard mounted sebelum akses context
     if (outputFile != null) {
       if (!mounted) return;
       _toast(AppLocalizations.of(context)!.translate('saved_success'));
@@ -149,7 +147,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
       bytes: bytes,
     );
 
-    // PERBAIKAN: Guard mounted sebelum akses context
     if (outputFile != null) {
       if (!mounted) return;
       _toast(AppLocalizations.of(context)!.translate('saved_success'));
@@ -176,7 +173,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
       bytes: Uint8List.fromList(utf8.encode(jsonString)),
     );
 
-    // PERBAIKAN: Guard mounted sebelum akses context
     if (outputFile != null) {
       if (!mounted) return;
       _toast(AppLocalizations.of(context)!.translate('saved_success'));
@@ -282,7 +278,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.account_box_outlined, size: 20, color: Color(0xFF10B981)),
+                        const Icon(LucideIcons.user, size: 20, color: Color(0xFF10B981)),
                         const SizedBox(width: 12),
                         Text(
                           '${l10n.translate('report_for')} ',
@@ -312,7 +308,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 child: Column(
                   children: [
                     _buildFlushItem(
-                      icon: Icons.picture_as_pdf,
+                      icon: LucideIcons.fileText,
                       title: l10n.translate('export_pdf'),
                       subtitle: l10n.translate('export_pdf_sub'),
                       onTap: _exportPdf,
@@ -320,7 +316,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       showDivider: true,
                     ),
                     _buildFlushItem(
-                      icon: Icons.table_chart,
+                      icon: LucideIcons.table,
                       title: l10n.translate('export_csv'),
                       subtitle: l10n.translate('export_csv_sub'),
                       onTap: _exportCsv,
@@ -347,7 +343,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 child: Column(
                   children: [
                     _buildFlushItem(
-                      icon: Icons.cloud_upload_outlined,
+                      icon: LucideIcons.cloudUpload,
                       title: l10n.translate('backup_json'),
                       subtitle: l10n.translate('backup_json_sub'),
                       onTap: _backupJson,
@@ -355,7 +351,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       showDivider: true,
                     ),
                     _buildFlushItem(
-                      icon: Icons.restore,
+                      icon: LucideIcons.rotateCcw,
                       title: l10n.translate('restore_json'),
                       subtitle: l10n.translate('restore_json_sub'),
                       onTap: _importJson,
@@ -410,7 +406,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade400),
+            Icon(LucideIcons.chevronRight, size: 18, color: Colors.grey.shade400),
           ],
         ),
       ),

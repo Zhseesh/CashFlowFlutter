@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/cashflow_repository.dart';
 import '../models/category.dart';
 import '../utils/app_events.dart';
@@ -115,7 +116,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
     return ListView.separated(
       padding: const EdgeInsets.all(20),
       itemCount: categories.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, i) {
         final c = categories[i];
         return Container(
@@ -127,19 +128,19 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: color.withValues(alpha: 0.15),
-              child: Icon(type == 'INCOME' ? Icons.south_west : Icons.north_east, color: color, size: 18),
+              child: Icon(type == 'INCOME' ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight, color: color, size: 18),
             ),
             title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 20),
+                  icon: const Icon(LucideIcons.pencil, size: 20),
                   color: Colors.grey,
                   onPressed: () => _showFormDialog(existing: c, type: type),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 20),
+                  icon: const Icon(LucideIcons.trash2, size: 20),
                   color: Colors.grey,
                   onPressed: () => _deleteCategory(c),
                 ),
@@ -158,9 +159,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        // PERBAIKAN: Menambahkan leading manual
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Kategori Kustom', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -197,7 +197,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
         ),
-        child: const Icon(Icons.add),
+        child: const Icon(LucideIcons.plus),
       ),
     );
   }

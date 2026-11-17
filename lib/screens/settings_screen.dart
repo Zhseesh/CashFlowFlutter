@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/theme_manager.dart';
 import 'about_screen.dart';
@@ -14,9 +15,8 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        // PERBAIKAN: Menambahkan leading manual
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(l10n.translate('settings'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -48,7 +48,7 @@ class SettingsScreen extends StatelessWidget {
                     PopupMenuItem(value: ThemeMode.dark, child: Text(l10n.translate('dark'))),
                   ],
                   child: ListTile(
-                    leading: const Icon(Icons.palette_outlined, color: Color(0xFF10B981)),
+                    leading: const Icon(LucideIcons.palette, color: Color(0xFF10B981)),
                     title: Text(l10n.translate('appearance'), style: const TextStyle(fontSize: 14)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min, 
@@ -62,7 +62,7 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.keyboard_arrow_down, size: 20),
+                        const Icon(LucideIcons.chevronDown, size: 20),
                       ],
                     ),
                   ),
@@ -92,7 +92,7 @@ class SettingsScreen extends StatelessWidget {
                     PopupMenuItem(value: 'en', child: Text(l10n.translate('english'))),
                   ],
                   child: ListTile(
-                    leading: const Icon(Icons.language, color: Color(0xFF10B981)),
+                    leading: const Icon(LucideIcons.globe, color: Color(0xFF10B981)),
                     title: Text(l10n.translate('language'), style: const TextStyle(fontSize: 14)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min, 
@@ -106,7 +106,7 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.keyboard_arrow_down, size: 20),
+                        const Icon(LucideIcons.chevronDown, size: 20),
                       ],
                     ),
                   ),
@@ -120,10 +120,10 @@ class SettingsScreen extends StatelessWidget {
           _buildMaterialWrapper(
             isDark: isDark,
             child: ListTile(
-              leading: const Icon(Icons.pie_chart_outline, color: Color(0xFF10B981)),
+              leading: const Icon(LucideIcons.pieChart, color: Color(0xFF10B981)),
               title: Text(l10n.translate('budget'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               subtitle: Text(l10n.translate('budget_sub'), style: const TextStyle(fontSize: 11)),
-              trailing: const Icon(Icons.chevron_right),
+              trailing: const Icon(LucideIcons.chevronRight),
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen())),
             ),
           ),
@@ -133,10 +133,10 @@ class SettingsScreen extends StatelessWidget {
           _buildMaterialWrapper(
             isDark: isDark,
             child: ListTile(
-              leading: const Icon(Icons.info_outline, color: Color(0xFF10B981)),
+              leading: const Icon(LucideIcons.info, color: Color(0xFF10B981)),
               title: Text(l10n.translate('about'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               subtitle: Text(l10n.translate('about_sub'), style: const TextStyle(fontSize: 11)),
-              trailing: const Icon(Icons.chevron_right),
+              trailing: const Icon(LucideIcons.chevronRight),
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen())),
             ),
           ),

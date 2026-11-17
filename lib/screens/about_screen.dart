@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
@@ -97,9 +98,8 @@ class _AboutScreenState extends State<AboutScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        // PERBAIKAN: Menambahkan leading manual
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(l10n.translate('about'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -118,7 +118,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   color: const Color(0xFF10B981).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Icon(Icons.account_balance_wallet, size: 48, color: Color(0xFF10B981)),
+                child: const Icon(LucideIcons.wallet, size: 48, color: Color(0xFF10B981)),
               ),
               const SizedBox(height: 24),
               const Text('Cash Flow', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
@@ -138,7 +138,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 height: 50,
                 child: OutlinedButton.icon(
                   onPressed: _checking ? null : _checkUpdate,
-                  icon: _checking ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.system_update),
+                  icon: _checking ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(LucideIcons.download),
                   label: Text(_checking ? l10n.translate('checking') : l10n.translate('check_update')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF10B981),

@@ -3,14 +3,16 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/cashflow_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
+import '../theme/neo_theme.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
 import '../widgets/balance_card.dart';
+import '../widgets/neo_chip.dart';
 import '../widgets/transaction_tile.dart';
 import 'transaction_form_screen.dart';
 import 'wallet_management_screen.dart';
-import 'settings_screen.dart'; 
+import 'settings_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -20,7 +22,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final _repo = CashFlowRepository();
-  
+
   double _balance = 0;
   double _incomeTotal = 0;
   double _expenseTotal = 0;
@@ -58,7 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (walletId == null) return;
 
     setState(() => _loading = true);
-    
+
     final balance = await _repo.getCurrentBalance(walletId);
     final inc = await _repo.totalByType('INCOME', walletId: walletId);
     final exp = await _repo.totalByType('EXPENSE', walletId: walletId);
@@ -66,13 +68,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final txs = await _repo.getTransactions(
       walletId: walletId,
       from: _dateRange?.start,
-      to: _dateRange?.end != null 
-          ? DateTime(_dateRange!.end.year, _dateRange!.end.month, _dateRange!.end.day, 23, 59, 59)
+      to: _dateRange?.end != null
+          ? DateTime(_dateRange!.end.year, _dateRange!.end.month,
+              _dateRange!.end.day, 23, 59, 59)
           : null,
       searchQuery: _searchCtrl.text,
-      limit: _isFiltering ? 10000 : 5, 
+      limit: _isFiltering ? 10000 : 5,
     );
-    
+
     if (!mounted) return;
     setState(() {
       _balance = balance;
@@ -84,15 +87,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _openEditScreen(TransactionRecord tx) async {
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => TransactionFormScreen(editing: tx)));
+    await Navigator.push(context,
+        MaterialPageRoute(builder: (_) => TransactionFormScreen(editing: tx)));
   }
 
   void _openWalletManagement() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletManagementScreen()));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => const WalletManagementScreen()));
   }
 
   void _openSettings() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => const SettingsScreen()));
   }
 
   Future<void> _pickDateRange() async {
@@ -111,7 +117,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ink = Neo.ink(context);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -119,15 +125,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _load,
+          color: NeoColors.yellow,
+          backgroundColor: ink,
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             children: [
+              // ── HEADER: wallet switcher + settings button ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  InkWell(
+                  GestureDetector(
                     onTap: _openWalletManagement,
-                    borderRadius: BorderRadius.circular(8),
                     child: Row(
                       children: [
                         ValueListenableBuilder(
@@ -135,132 +143,188 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           builder: (context, wallet, _) {
                             return Text(
                               wallet?.name ?? l10n.translate('main_wallet'),
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                              style: NeoText.display(22, color: ink),
                             );
                           },
                         ),
                         const SizedBox(width: 4),
-                        const Icon(LucideIcons.chevronDown, size: 24, color: Colors.grey),
+                        Icon(LucideIcons.chevronDown, size: 22, color: ink),
                       ],
                     ),
                   ),
-                  
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(LucideIcons.settings, size: 20),
-                      onPressed: _openSettings,
+                  GestureDetector(
+                    onTap: _openSettings,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: NeoColors.cyan,
+                        borderRadius: BorderRadius.circular(12),
+                        border: NeoBorders.reg(ink),
+                        boxShadow: NeoShadows.sm(ink),
+                      ),
+                      child: Icon(LucideIcons.settings, size: 20,
+                          color: NeoColors.inkLight),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
 
-              BalanceCard(balance: _balance, income: _incomeTotal, expense: _expenseTotal),
-              const SizedBox(height: 24),
-              
+              // ── BALANCE CARD ──
+              BalanceCard(
+                balance: _balance,
+                income: _incomeTotal,
+                expense: _expenseTotal,
+              ),
+              const SizedBox(height: 22),
+
+              // ── SEARCH BAR ──
               Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                  color: Neo.paper(context),
+                  borderRadius: BorderRadius.circular(NeoRadius.reg),
+                  border: NeoBorders.reg(ink),
+                  boxShadow: NeoShadows.sm(ink),
                 ),
                 child: TextField(
                   controller: _searchCtrl,
                   onSubmitted: (_) => _load(),
                   textInputAction: TextInputAction.search,
+                  style: NeoText.body(14, weight: FontWeight.w600, color: ink),
                   decoration: InputDecoration(
                     hintText: l10n.translate('search_hint'),
-                    prefixIcon: const Icon(LucideIcons.search, size: 20),
+                    hintStyle: NeoText.body(14,
+                        color: ink.withValues(alpha: 0.4)),
+                    prefixIcon: Icon(LucideIcons.search, size: 20, color: ink),
                     suffixIcon: IconButton(
-                      icon: const Icon(LucideIcons.calendar, size: 20),
+                      icon: Icon(LucideIcons.calendar, size: 20, color: ink),
                       onPressed: _pickDateRange,
                     ),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
 
+              // ── FILTER CHIP ──
               if (_isFiltering)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
-                  child: Row(
+                  child: Wrap(
+                    spacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       if (_dateRange != null)
-                        Chip(
-                          label: Text('${formatDate(_dateRange!.start)} - ${formatDate(_dateRange!.end)}', style: const TextStyle(fontSize: 11)),
-                          onDeleted: () { setState(() => _dateRange = null); _load(); },
+                        NeoChip(
+                          emoji: '📅',
+                          label:
+                              '${formatDate(_dateRange!.start)} - ${formatDate(_dateRange!.end)}',
+                          onDeleted: () {
+                            setState(() => _dateRange = null);
+                            _load();
+                          },
                         ),
-                      TextButton(
-                        onPressed: () { _searchCtrl.clear(); setState(() => _dateRange = null); _load(); },
-                        child: Text(l10n.translate('reset'), style: const TextStyle(fontSize: 12)),
-                      )
+                      GestureDetector(
+                        onTap: () {
+                          _searchCtrl.clear();
+                          setState(() => _dateRange = null);
+                          _load();
+                        },
+                        child: Text(
+                          l10n.translate('reset').toUpperCase(),
+                          style: NeoText.label(11, color: ink),
+                        ),
+                      ),
                     ],
                   ),
                 ),
 
               const SizedBox(height: 24),
 
+              // ── SECTION HEADER ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.translate('recent_transactions'),
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    l10n.translate('recent_transactions').toUpperCase(),
+                    style: NeoText.display(16, color: ink),
                   ),
                   if (_isFiltering)
-                    Text('${_transactions.length}', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: NeoColors.purple,
+                        borderRadius: BorderRadius.circular(6),
+                        border: NeoBorders.thin(ink),
+                      ),
+                      child: Text(
+                        '${_transactions.length}',
+                        style: NeoText.label(10, color: NeoColors.inkLight),
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 16),
-              
+              const SizedBox(height: 14),
+
+              // ── TRANSACTIONS ──
               if (_loading)
-                const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
               else if (_transactions.isEmpty)
                 Container(
-                  padding: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(28),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                    color: Neo.paper(context),
+                    borderRadius: BorderRadius.circular(NeoRadius.lg),
+                    border: NeoBorders.reg(ink),
+                    boxShadow: NeoShadows.sm(ink),
                   ),
                   child: Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        width: 64,
+                        height: 64,
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
-                          shape: BoxShape.circle,
+                          color: NeoColors.cyan,
+                          borderRadius: BorderRadius.circular(16),
+                          border: NeoBorders.reg(ink),
                         ),
-                        child: Icon(_isFiltering ? LucideIcons.searchX : LucideIcons.receipt, size: 32, color: Colors.grey),
+                        child: Icon(
+                          _isFiltering ? LucideIcons.searchX : LucideIcons.receipt,
+                          size: 30,
+                          color: NeoColors.inkLight,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         l10n.translate('no_transactions'),
-                        style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+                        style: NeoText.body(14, weight: FontWeight.w700, color: ink),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         l10n.translate('no_transactions_sub'),
-                        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                        style: NeoText.body(12,
+                            color: ink.withValues(alpha: 0.6)),
+                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
                 )
               else
                 ..._transactions.map((t) => TransactionTile(
-                  transaction: t,
-                  onTap: _openEditScreen,
-                )),
-                
-              const SizedBox(height: 120), 
+                      transaction: t,
+                      onTap: _openEditScreen,
+                    )),
+
+              const SizedBox(height: 120),
             ],
           ),
         ),

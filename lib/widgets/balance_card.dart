@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/neo_theme.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
 
@@ -8,34 +9,28 @@ class BalanceCard extends StatelessWidget {
   final double balance;
   final double income;
   final double expense;
-  const BalanceCard({super.key, required this.balance, required this.income, required this.expense});
+  const BalanceCard({
+    super.key,
+    required this.balance,
+    required this.income,
+    required this.expense,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
+    final ink = Neo.ink(context);
 
     return ValueListenableBuilder<bool>(
       valueListenable: AppState.hideBalance,
       builder: (context, isHidden, _) {
         return Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDark 
-                  ? [const Color(0xFF059669), const Color(0xFF064E3B)] 
-                  : [const Color(0xFF34D399), const Color(0xFF059669)], 
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            color: NeoColors.yellow,
+            borderRadius: BorderRadius.circular(NeoRadius.lg),
+            border: NeoBorders.thick(ink),
+            boxShadow: NeoShadows.md(ink),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,53 +39,65 @@ class BalanceCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.translate('current_balance'),
-                    style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)
+                    l10n.translate('current_balance').toUpperCase(),
+                    style: NeoText.label(11, color: NeoColors.inkLight),
                   ),
                   GestureDetector(
                     onTap: () => AppState.hideBalance.value = !isHidden,
                     child: Container(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
+                        color: NeoColors.paperLight,
+                        border: NeoBorders.thin(ink),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
-                        isHidden ? LucideIcons.eyeOff : LucideIcons.eye, 
-                        color: Colors.white, 
-                        size: 18
+                        isHidden ? LucideIcons.eyeOff : LucideIcons.eye,
+                        size: 16,
+                        color: NeoColors.inkLight,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Text(
-                isHidden ? 'IDR ••••••••' : formatCurrency(balance), 
-                style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold, letterSpacing: -1)
+                isHidden ? 'IDR ••••••••' : formatCurrency(balance),
+                style: NeoText.display(30, color: NeoColors.inkLight),
               ),
-              const SizedBox(height: 24),
-              
+              const SizedBox(height: 20),
+
+              // Mini row income / expense
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  color: NeoColors.paperLight,
+                  border: NeoBorders.thin(ink),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     Expanded(
-                      child: _buildMini(LucideIcons.arrowDown, l10n.translate('income'), isHidden ? 'IDR ••••••' : formatCurrency(income))
+                      child: _buildMini(
+                        icon: LucideIcons.arrowDown,
+                        label: l10n.translate('income'),
+                        value: isHidden ? 'IDR ••••' : formatCurrency(income),
+                        color: NeoColors.lime,
+                      ),
                     ),
                     Container(
-                      width: 1,
+                      width: 2,
                       height: 36,
-                      color: Colors.white.withValues(alpha: 0.3),
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      color: ink,
+                      margin: const EdgeInsets.symmetric(horizontal: 12),
                     ),
                     Expanded(
-                      child: _buildMini(LucideIcons.arrowUp, l10n.translate('expense'), isHidden ? 'IDR ••••••' : formatCurrency(expense))
+                      child: _buildMini(
+                        icon: LucideIcons.arrowUp,
+                        label: l10n.translate('expense'),
+                        value: isHidden ? 'IDR ••••' : formatCurrency(expense),
+                        color: NeoColors.pink,
+                      ),
                     ),
                   ],
                 ),
@@ -98,29 +105,42 @@ class BalanceCard extends StatelessWidget {
             ],
           ),
         );
-      }
+      },
     );
   }
 
-  Widget _buildMini(IconData icon, String label, String value) {
+  Widget _buildMini({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.3),
-            shape: BoxShape.circle,
+            color: color,
+            border: NeoBorders.thin(NeoColors.inkLight),
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: Colors.white, size: 12),
+          child: Icon(icon, size: 12, color: NeoColors.inkLight),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 9, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+              Text(
+                label.toUpperCase(),
+                style: NeoText.label(9, color: NeoColors.inkLight),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+              Text(
+                value,
+                style: NeoText.body(12, weight: FontWeight.w700, color: NeoColors.inkLight),
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),

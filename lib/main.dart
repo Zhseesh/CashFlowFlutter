@@ -7,8 +7,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'data/cashflow_repository.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/main_shell.dart';
+import 'theme/neo_theme.dart';
 import 'utils/app_state.dart';
-import 'utils/app_theme.dart';
 import 'utils/theme_manager.dart';
 
 void main() async {
@@ -46,11 +46,10 @@ class CashFlowApp extends StatelessWidget {
             return MaterialApp(
               title: 'Cash Flow',
               debugShowCheckedModeBanner: false,
-              theme: AppTheme.light,
-              darkTheme: AppTheme.dark,
+              theme: buildNeoTheme(brightness: Brightness.light),
+              darkTheme: buildNeoTheme(brightness: Brightness.dark),
               themeMode: mode,
               locale: locale,
-              // PERBAIKAN: Hilangkan const dari list karena delegate bisa non-const
               localizationsDelegates: [
                 AppLocalizations.delegate,
                 GlobalMaterialLocalizations.delegate,

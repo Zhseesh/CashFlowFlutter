@@ -87,7 +87,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
           cat > android/key.properties <<EOF
-          storePassword=$KEYSTORE_PASSWORD
+          storePassword=$KEY_STORE_PASSWORD
           keyPassword=$KEY_PASSWORD
           keyAlias=$KEY_ALIAS
           storeFile=keystore.jks

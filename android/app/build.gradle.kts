@@ -1,32 +1,23 @@
 import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
-    // KEMBALIKAN PLUGIN KOTLIN
-    id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val localProperties = Properties()
-val localPropertiesFile = rootProject.file("local.properties")
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.inputStream().use { localProperties.load(it) }
-}
-
-val flutterVersionCode = localProperties.getProperty("flutter.versionCode")?.toIntOrNull() ?: 1
-val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "1.0.0"
-
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
-val hasKeystore = keystorePropertiesFile.exists()
-if (hasKeystore) {
-    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
+
+val hasKeystore = keystorePropertiesFile.exists()
 
 android {
     namespace = "com.zsheesh.cashflow"
-    compileSdk = 36
-    ndkVersion = "28.2.13676358"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -35,19 +26,24 @@ android {
 
     defaultConfig {
         applicationId = "com.zsheesh.cashflow"
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = flutterVersionCode
-        versionName = flutterVersionName
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
     }
 
     signingConfigs {
-        if (hasKeystore) {
-            create("release") {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                val storeFilePath = keystoreProperties.getProperty("storeFile")
+                if (storeFilePath != null) {
+                    storeFile = file(storeFilePath)
+                }
+                storePassword = keystoreProperties.getProperty("storePassword")
+                enableV1Signing = true
+                enableV3Signing = true
             }
         }
     }

@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/cashflow_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
@@ -113,7 +114,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
 
-    // PERBAIKAN: Mengembalikan Scaffold transparan
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
@@ -140,7 +140,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           },
                         ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.keyboard_arrow_down, size: 24, color: Colors.grey),
+                        const Icon(LucideIcons.chevronDown, size: 24, color: Colors.grey),
                       ],
                     ),
                   ),
@@ -152,7 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.settings_outlined, size: 20),
+                      icon: const Icon(LucideIcons.settings, size: 20),
                       onPressed: _openSettings,
                     ),
                   ),
@@ -175,9 +175,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
                     hintText: l10n.translate('search_hint'),
-                    prefixIcon: const Icon(Icons.search, size: 20),
+                    prefixIcon: const Icon(LucideIcons.search, size: 20),
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.calendar_month, size: 20),
+                      icon: const Icon(LucideIcons.calendar, size: 20),
                       onPressed: _pickDateRange,
                     ),
                     border: InputBorder.none,
@@ -200,7 +200,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       TextButton(
                         onPressed: () { _searchCtrl.clear(); setState(() => _dateRange = null); _load(); },
-                        child: const Text('Reset', style: TextStyle(fontSize: 12)),
+                        child: Text(l10n.translate('reset'), style: const TextStyle(fontSize: 12)),
                       )
                     ],
                   ),
@@ -216,7 +216,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   if (_isFiltering)
-                    Text('${_transactions.length} ditemukan', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                    Text('${_transactions.length}', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                 ],
               ),
               const SizedBox(height: 16),
@@ -239,7 +239,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(_isFiltering ? Icons.search_off : Icons.receipt_long_outlined, size: 32, color: Colors.grey),
+                        child: Icon(_isFiltering ? LucideIcons.searchX : LucideIcons.receipt, size: 32, color: Colors.grey),
                       ),
                       const SizedBox(height: 16),
                       Text(

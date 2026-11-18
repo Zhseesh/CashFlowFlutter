@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/cashflow_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../models/budget.dart';
@@ -113,9 +114,8 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        // PERBAIKAN: Menambahkan leading manual
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(l10n.translate('budget'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -126,7 +126,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           : ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: _categories.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, i) {
                 final c = _categories[i];
                 final b = _budgets[c.name];
@@ -159,7 +159,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                              Icon(Icons.edit, size: 16, color: Colors.grey.shade400),
+                              Icon(LucideIcons.pencil, size: 16, color: Colors.grey.shade400),
                             ],
                           ),
                           const SizedBox(height: 12),

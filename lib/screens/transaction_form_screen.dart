@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:open_filex/open_filex.dart';
@@ -208,7 +209,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     }
   }
 
-  // PERBAIKAN: Menghapus border dari Container, menggunakan border dari AppTheme
   Widget _buildHairlineInput({
     required Widget leading,
     required String label,
@@ -285,19 +285,19 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                   color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.attach_file, color: Color(0xFF10B981), size: 16),
+                child: const Icon(LucideIcons.paperclip, color: Color(0xFF10B981), size: 16),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(l10n.translate('saved_attachment'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF059669))),
               ),
               IconButton(
-                icon: const Icon(Icons.visibility_outlined, size: 20),
+                icon: const Icon(LucideIcons.eye, size: 20),
                 onPressed: () => _viewFile(path),
                 color: Colors.grey,
               ),
               IconButton(
-                icon: const Icon(Icons.close, size: 20),
+                icon: const Icon(LucideIcons.x, size: 20),
                 onPressed: () => _removeExisting(path),
                 color: Colors.grey,
               ),
@@ -321,7 +321,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                   color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.cloud_upload, color: Colors.orange, size: 16),
+                child: const Icon(LucideIcons.cloudUpload, color: Colors.orange, size: 16),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -334,12 +334,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.visibility_outlined, size: 20),
+                icon: const Icon(LucideIcons.eye, size: 20),
                 onPressed: () => _viewFile(path, isTemp: true),
                 color: Colors.grey,
               ),
               IconButton(
-                icon: const Icon(Icons.close, size: 20),
+                icon: const Icon(LucideIcons.x, size: 20),
                 onPressed: () => _removeNewTemp(path),
                 color: Colors.grey,
               ),
@@ -352,7 +352,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: _saving ? null : _pickAttachment,
-            icon: const Icon(Icons.add, size: 18),
+            icon: const Icon(LucideIcons.plus, size: 18),
             label: Text(l10n.translate('add_attachment')),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF10B981),
@@ -375,7 +375,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -387,7 +387,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           if (_isEditing)
             IconButton(
               tooltip: l10n.translate('delete'),
-              icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+              icon: const Icon(LucideIcons.trash2, color: Color(0xFFEF4444)),
               onPressed: _saving ? null : _delete,
             ),
         ],
@@ -435,7 +435,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.check, size: 14, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey),
+                                Icon(LucideIcons.check, size: 14, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey),
                                 const SizedBox(width: 6),
                                 Text(l10n.translate('income'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey)),
                               ],
@@ -451,7 +451,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.arrow_outward, size: 14, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey),
+                                Icon(LucideIcons.arrowUpRight, size: 14, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey),
                                 const SizedBox(width: 6),
                                 Text(l10n.translate('expense'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey)),
                               ],
@@ -467,7 +467,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             const SizedBox(height: 32),
 
             _buildHairlineInput(
-              leading: Icon(Icons.title, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
+              leading: Icon(LucideIcons.type, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: l10n.translate('title'),
               child: TextFormField(
                 controller: _titleCtrl,
@@ -511,7 +511,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              leading: Icon(Icons.category_outlined, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
+              leading: Icon(LucideIcons.shapes, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: l10n.translate('category'),
               child: Row(
                 children: [
@@ -520,7 +520,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                       child: DropdownButton<Category>(
                         value: _category,
                         isExpanded: true,
-                        icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.grey),
+                        icon: const Icon(LucideIcons.chevronDown, size: 20, color: Colors.grey),
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: isDark ? Colors.white : Colors.black87),
                         onChanged: _saving ? null : (c) => setState(() => _category = c),
                         items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
@@ -529,7 +529,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                   ),
                   IconButton(
                     tooltip: l10n.translate('manage_category'),
-                    icon: const Icon(Icons.tune, size: 20, color: Color(0xFF10B981)),
+                    icon: const Icon(LucideIcons.slidersHorizontal, size: 20, color: Color(0xFF10B981)),
                     onPressed: _saving ? null : () async {
                       await Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryManagementScreen()));
                       _loadCategories();
@@ -540,7 +540,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              leading: Icon(Icons.calendar_today, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
+              leading: Icon(LucideIcons.calendarDays, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: l10n.translate('date'),
               child: InkWell(
                 onTap: _saving ? null : _pickDate,
@@ -553,7 +553,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(formatDate(_date), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                      const Icon(Icons.edit_outlined, size: 16, color: Colors.grey),
+                      const Icon(LucideIcons.pencil, size: 16, color: Colors.grey),
                     ],
                   ),
                 ),
@@ -561,7 +561,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
 
             _buildHairlineInput(
-              leading: Icon(Icons.notes, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
+              leading: Icon(LucideIcons.alignLeft, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
               label: l10n.translate('note'),
               child: TextFormField(
                 controller: _noteCtrl,

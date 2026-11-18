@@ -1,6 +1,8 @@
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart' hide GlobalMaterialLocalizations;
+import 'package:flutter_localizations/flutter_localizations.dart' 
+    hide GlobalMaterialLocalizations, GlobalCupertinoLocalizations;
 import 'package:material_ui/material_ui.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'data/cashflow_repository.dart';
 import 'l10n/app_localizations.dart';
@@ -48,7 +50,8 @@ class CashFlowApp extends StatelessWidget {
               darkTheme: AppTheme.dark,
               themeMode: mode,
               locale: locale,
-              localizationsDelegates: const [
+              // PERBAIKAN: Hilangkan const dari list karena delegate bisa non-const
+              localizationsDelegates: [
                 AppLocalizations.delegate,
                 GlobalMaterialLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate,

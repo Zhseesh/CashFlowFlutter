@@ -32,7 +32,8 @@ class Neo {
   static Color ink(BuildContext c) => Theme.of(c).colorScheme.onSurface;
   static Color paper(BuildContext c) => Theme.of(c).colorScheme.surface;
   static Color canvas(BuildContext c) => Theme.of(c).scaffoldBackgroundColor;
-  static bool isDark(BuildContext c) => Theme.of(c).brightness == Brightness.dark;
+  static bool isDark(BuildContext c) =>
+      Theme.of(c).brightness == Brightness.dark;
 }
 
 class NeoRadius {
@@ -43,7 +44,8 @@ class NeoRadius {
 }
 
 class NeoText {
-  static TextStyle display(double size, {Color? color}) => GoogleFonts.archivoBlack(
+  static TextStyle display(double size, {Color? color}) =>
+      GoogleFonts.archivoBlack(
         fontSize: size,
         color: color,
         letterSpacing: -0.5,
@@ -62,7 +64,8 @@ class NeoText {
         height: 1.3,
       );
 
-  static TextStyle label(double size, {Color? color}) => GoogleFonts.spaceGrotesk(
+  static TextStyle label(double size, {Color? color}) =>
+      GoogleFonts.spaceGrotesk(
         fontSize: size,
         fontWeight: FontWeight.w700,
         color: color,
@@ -112,6 +115,8 @@ ThemeData buildNeoTheme({required Brightness brightness}) {
       surface: paper,
       onSurface: ink,
     ),
+
+    // ── APP BAR ─────────────────────────────────────────
     appBarTheme: AppBarTheme(
       backgroundColor: paper,
       foregroundColor: ink,
@@ -122,9 +127,97 @@ ThemeData buildNeoTheme({required Brightness brightness}) {
       titleTextStyle: NeoText.display(20, color: ink),
       iconTheme: IconThemeData(color: ink),
     ),
+
+    // ── DIVIDER ─────────────────────────────────────────
     dividerTheme: DividerThemeData(color: ink, thickness: 2, space: 2),
+
+    // ── RIPPLE (disable) ────────────────────────────────
     splashFactory: NoSplash.splashFactory,
     highlightColor: Colors.transparent,
     hoverColor: Colors.transparent,
+
+    // ── SNACKBAR ────────────────────────────────────────
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: ink,
+      contentTextStyle:
+          NeoText.body(13, weight: FontWeight.w600, color: paper),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(NeoRadius.reg),
+      ),
+      behavior: SnackBarBehavior.floating,
+      elevation: 0,
+      actionTextColor: NeoColors.yellow,
+      insetPadding: const EdgeInsets.all(16),
+    ),
+
+    // ── POPUP MENU (dropdown appearance/language) ───────
+    popupMenuTheme: PopupMenuThemeData(
+      color: paper,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(NeoRadius.reg),
+        side: BorderSide(color: ink, width: 3),
+      ),
+      textStyle: NeoText.body(13, weight: FontWeight.w600, color: ink),
+      labelTextStyle: WidgetStatePropertyAll(
+        NeoText.body(13, weight: FontWeight.w600, color: ink),
+      ),
+    ),
+
+    // ── DIALOG (fallback showDialog default) ────────────
+    dialogTheme: DialogThemeData(
+      backgroundColor: paper,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(NeoRadius.lg),
+        side: BorderSide(color: ink, width: 3),
+      ),
+      titleTextStyle: NeoText.display(16, color: ink),
+      contentTextStyle: NeoText.body(13, color: ink),
+    ),
+
+    // ── TOOLTIP ─────────────────────────────────────────
+    tooltipTheme: TooltipThemeData(
+      decoration: BoxDecoration(
+        color: ink,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      textStyle: NeoText.body(11, weight: FontWeight.w600, color: paper),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    ),
+
+    // ── INPUT (NeoInput custom tetap override) ──────────
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: paper,
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(NeoRadius.reg),
+        borderSide: BorderSide(color: ink, width: 3),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(NeoRadius.reg),
+        borderSide: const BorderSide(color: NeoColors.yellow, width: 3),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(NeoRadius.reg),
+        borderSide: const BorderSide(color: NeoColors.red, width: 3),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(NeoRadius.reg),
+        borderSide: const BorderSide(color: NeoColors.red, width: 3),
+      ),
+    ),
+
+    // ── TEXT SELECTION ──────────────────────────────────
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: ink,
+      selectionColor: NeoColors.yellow.withValues(alpha: 0.5),
+      selectionHandleColor: ink,
+    ),
   );
 }

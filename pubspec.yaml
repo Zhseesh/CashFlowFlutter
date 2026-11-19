@@ -1,23 +1,23 @@
 name: cashflow
 description: Aplikasi pengelola arus kas & analisis keuangan
 publish_to: 'none'
-version: 1.0.11+12
+version: 1.1.0+13
 
 environment:
-  sdk: '>=3.14.0 <4.0.0' # Dart 3.14.0 (Flutter 3.50.0)
+  sdk: '>=3.14.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  
+
   # UI & Icons
   material_ui: ^1.10.0
   cupertino_ui: ^1.1.6
-  lucide_icons_flutter: ^4.0.3 # Lucide Icons (v4.0.3)
+  lucide_icons_flutter: ^4.0.3
   google_fonts: ^9.0.0
-  fl_chart: ^1.3.1 # Update dari 1.3.0
+  fl_chart: ^1.3.1
 
   # Database & File
   sqflite: ^2.4.5
@@ -28,7 +28,7 @@ dependencies:
   # Export & Sharing
   pdf: ^3.13.1
   share_plus: ^13.3.1
-  file_picker: ^13.3.3 # Update dari 13.3.0
+  file_picker: ^13.3.3
   open_filex: ^5.0.0
 
   # Networking & Utils
@@ -45,3 +45,4 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true

@@ -2,19 +2,25 @@ import 'package:material_ui/material_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/cashflow_repository.dart';
 import '../models/category.dart';
+import '../theme/neo_theme.dart';
 import '../utils/app_events.dart';
+import '../widgets/neo_button.dart';
+import '../widgets/neo_dialog.dart';
+import '../widgets/neo_fab.dart';
+import '../widgets/neo_input.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});
-
   @override
-  State<CategoryManagementScreen> createState() => _CategoryManagementScreenState();
+  State<CategoryManagementScreen> createState() =>
+      _CategoryManagementScreenState();
 }
 
-class _CategoryManagementScreenState extends State<CategoryManagementScreen> with SingleTickerProviderStateMixin {
+class _CategoryManagementScreenState extends State<CategoryManagementScreen>
+    with SingleTickerProviderStateMixin {
   final _repo = CashFlowRepository();
   late TabController _tabController;
-  
+
   List<Category> _incomeCategories = [];
   List<Category> _expenseCategories = [];
   bool _loading = true;
@@ -48,21 +54,31 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
     final colorHex = type == 'INCOME' ? '#10B981' : '#EF4444';
     final iconName = type == 'INCOME' ? 'salary' : 'food';
 
-    final name = await showDialog<String>(
+    final name = await showNeoDialog<String>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(existing == null ? 'Tambah Kategori' : 'Edit Kategori'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Nama Kategori'),
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, ctrl.text.trim()),
-            child: const Text('Simpan'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NeoDialogTitle(existing == null
+              ? 'Tambah Kategori'
+              : 'Edit Kategori'),
+          NeoInput(
+            controller: ctrl,
+            label: 'Nama Kategori',
+          ),
+          NeoDialogActions(
+            children: [
+              NeoButton(
+                label: 'Batal',
+                variant: NeoButtonVariant.secondary,
+                onPressed: () => Navigator.pop(context),
+              ),
+              NeoButton(
+                label: 'Simpan',
+                onPressed: () => Navigator.pop(context, ctrl.text.trim()),
+              ),
+            ],
           ),
         ],
       ),
@@ -71,27 +87,45 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
     if (name == null || name.isEmpty) return;
 
     if (existing == null) {
-      await _repo.insertCategory(Category(name: name, type: type, iconName: iconName, colorHex: colorHex));
+      await _repo.insertCategory(Category(
+          name: name, type: type, iconName: iconName, colorHex: colorHex));
     } else {
-      await _repo.updateCategory(Category(id: existing.id, name: name, type: type, iconName: iconName, colorHex: colorHex));
+      await _repo.updateCategory(Category(
+          id: existing.id,
+          name: name,
+          type: type,
+          iconName: iconName,
+          colorHex: colorHex));
     }
-    
     _load();
     AppEvents.notify();
   }
 
   Future<void> _deleteCategory(Category c) async {
-    final ok = await showDialog<bool>(
+    final ok = await showNeoDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Hapus Kategori?'),
-        content: Text('Kategori "${c.name}" akan dihapus. Transaksi lama tidak akan terpengaruh.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hapus'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const NeoDialogTitle('Hapus Kategori?'),
+          Text(
+            'Kategori "${c.name}" akan dihapus. Transaksi lama tidak akan terpengaruh.',
+            style: NeoText.body(13, color: Neo.ink(context)),
+          ),
+          NeoDialogActions(
+            children: [
+              NeoButton(
+                label: 'Batal',
+                variant: NeoButtonVariant.secondary,
+                onPressed: () => Navigator.pop(context, false),
+              ),
+              NeoButton(
+                label: 'Hapus',
+                variant: NeoButtonVariant.danger,
+                onPressed: () => Navigator.pop(context, true),
+              ),
+            ],
           ),
         ],
       ),
@@ -104,48 +138,65 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
   }
 
   Widget _buildList(List<Category> categories, String type) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = type == 'INCOME' ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final ink = Neo.ink(context);
+    final color = type == 'INCOME' ? NeoColors.lime : NeoColors.pink;
 
     if (categories.isEmpty) {
       return Center(
-        child: Text('Belum ada kategori.', style: TextStyle(color: Colors.grey.shade500)),
+        child: Text('Belum ada kategori.',
+            style: NeoText.body(13, color: ink.withValues(alpha: 0.5))),
       );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       itemCount: categories.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
         final c = categories[i];
         return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+            color: Neo.paper(context),
+            borderRadius: BorderRadius.circular(NeoRadius.reg),
+            border: NeoBorders.reg(ink),
+            boxShadow: NeoShadows.sm(ink),
           ),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: color.withValues(alpha: 0.15),
-              child: Icon(type == 'INCOME' ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight, color: color, size: 18),
-            ),
-            title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(LucideIcons.pencil, size: 20),
-                  color: Colors.grey,
-                  onPressed: () => _showFormDialog(existing: c, type: type),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: color,
+                  border: NeoBorders.thin(ink),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                IconButton(
-                  icon: const Icon(LucideIcons.trash2, size: 20),
-                  color: Colors.grey,
-                  onPressed: () => _deleteCategory(c),
+                child: Icon(
+                  type == 'INCOME'
+                      ? LucideIcons.arrowDownLeft
+                      : LucideIcons.arrowUpRight,
+                  size: 18,
+                  color: NeoColors.inkLight,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(c.name,
+                    style:
+                        NeoText.body(14, weight: FontWeight.w700, color: ink)),
+              ),
+              IconButton(
+                icon: Icon(LucideIcons.pencil,
+                    size: 18, color: ink.withValues(alpha: 0.7)),
+                onPressed: () => _showFormDialog(existing: c, type: type),
+              ),
+              IconButton(
+                icon: const Icon(LucideIcons.trash2,
+                    size: 18, color: NeoColors.red),
+                onPressed: () => _deleteCategory(c),
+              ),
+            ],
           ),
         );
       },
@@ -154,26 +205,46 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ink = Neo.ink(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: Icon(LucideIcons.arrowLeft, color: ink),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Kategori Kustom', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: const Color(0xFF10B981),
-          labelColor: const Color(0xFF10B981),
-          unselectedLabelColor: Colors.grey,
-          tabs: const [
-            Tab(text: 'Pemasukan'),
-            Tab(text: 'Pengeluaran'),
-          ],
+        title: Text('Kategori Kustom',
+            style: NeoText.display(18, color: ink)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Neo.paper(context),
+              borderRadius: BorderRadius.circular(NeoRadius.reg),
+              border: NeoBorders.reg(ink),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                color: NeoColors.yellow,
+                borderRadius: BorderRadius.circular(10),
+                border: NeoBorders.thin(ink),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: NeoColors.inkLight,
+              unselectedLabelColor: ink.withValues(alpha: 0.6),
+              labelStyle: NeoText.label(11, color: NeoColors.inkLight),
+              unselectedLabelStyle: NeoText.label(11),
+              dividerColor: Colors.transparent,
+              tabs: const [
+                Tab(text: 'PEMASUKAN'),
+                Tab(text: 'PENGELUARAN'),
+              ],
+            ),
+          ),
         ),
       ),
       body: _loading
@@ -185,19 +256,13 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> wit
                 _buildList(_expenseCategories, 'EXPENSE'),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
+      floatingActionButton: NeoFab(
+        icon: LucideIcons.plus,
+        color: NeoColors.yellow,
+        onTap: () {
           final type = _tabController.index == 0 ? 'INCOME' : 'EXPENSE';
           _showFormDialog(type: type);
         },
-        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        foregroundColor: const Color(0xFF10B981),
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
-        ),
-        child: const Icon(LucideIcons.plus),
       ),
     );
   }

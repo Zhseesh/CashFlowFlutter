@@ -5,10 +5,12 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/neo_theme.dart';
+import '../widgets/neo_button.dart';
+import '../widgets/neo_dialog.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
-
   @override
   State<AboutScreen> createState() => _AboutScreenState();
 }
@@ -20,18 +22,19 @@ class _AboutScreenState extends State<AboutScreen> {
     setState(() => _checking = true);
     try {
       final response = await http.get(
-        Uri.parse('https://api.github.com/repos/Zhseesh/CashFlowFlutter/releases/latest'),
+        Uri.parse(
+            'https://api.github.com/repos/Zhseesh/CashFlowFlutter/releases/latest'),
         headers: {
           'Accept': 'application/vnd.github.v3+json',
           'User-Agent': 'Flutter-CashFlow-App',
         },
       );
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final latestVersion = data['tag_name'].toString().replaceAll('v', '');
         final htmlUrl = data['html_url'].toString();
-        
+
         final packageInfo = await PackageInfo.fromPlatform();
         final currentVersion = packageInfo.version;
 
@@ -39,42 +42,78 @@ class _AboutScreenState extends State<AboutScreen> {
         final l10n = AppLocalizations.of(context)!;
 
         if (latestVersion != currentVersion) {
-          showDialog(
+          showNeoDialog(
             context: context,
-            builder: (_) => AlertDialog(
-              title: Text(l10n.translate('update_available')),
-              content: Text('${l10n.translate('update_msg')} $currentVersion'),
-              actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.translate('later'))),
-                FilledButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    launchUrl(Uri.parse(htmlUrl), mode: LaunchMode.externalApplication);
-                  },
-                  child: Text(l10n.translate('open_github')),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                NeoDialogTitle(l10n.translate('update_available')),
+                Text('${l10n.translate('update_msg')} $currentVersion',
+                    style: NeoText.body(13, color: Neo.ink(context))),
+                NeoDialogActions(
+                  children: [
+                    NeoButton(
+                      label: l10n.translate('later'),
+                      variant: NeoButtonVariant.secondary,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    NeoButton(
+                      label: l10n.translate('open_github'),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        launchUrl(Uri.parse(htmlUrl),
+                            mode: LaunchMode.externalApplication);
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
           );
         } else {
-          showDialog(
+          showNeoDialog(
             context: context,
-            builder: (_) => AlertDialog(
-              title: Text(l10n.translate('up_to_date')),
-              content: Text('${l10n.translate('up_to_date_msg')} ($currentVersion).'),
-              actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.translate('close')))],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                NeoDialogTitle(l10n.translate('up_to_date')),
+                Text('${l10n.translate('up_to_date_msg')} ($currentVersion).',
+                    style: NeoText.body(13, color: Neo.ink(context))),
+                NeoDialogActions(
+                  children: [
+                    NeoButton(
+                      label: l10n.translate('close'),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ],
             ),
           );
         }
       } else if (response.statusCode == 404) {
         if (!mounted) return;
         final l10n = AppLocalizations.of(context)!;
-        showDialog(
+        showNeoDialog(
           context: context,
-          builder: (_) => AlertDialog(
-            title: Text(l10n.translate('info')),
-            content: Text(l10n.translate('no_release')),
-            actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.translate('close')))],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              NeoDialogTitle(l10n.translate('info')),
+              Text(l10n.translate('no_release'),
+                  style: NeoText.body(13, color: Neo.ink(context))),
+              NeoDialogActions(
+                children: [
+                  NeoButton(
+                    label: l10n.translate('close'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       } else {
@@ -93,17 +132,17 @@ class _AboutScreenState extends State<AboutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ink = Neo.ink(context);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: Icon(LucideIcons.arrowLeft, color: ink),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(l10n.translate('about'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: Text(l10n.translate('about'),
+            style: NeoText.display(18, color: ink)),
       ),
       body: Center(
         child: Padding(
@@ -115,43 +154,46 @@ class _AboutScreenState extends State<AboutScreen> {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  color: NeoColors.yellow,
                   borderRadius: BorderRadius.circular(24),
+                  border: NeoBorders.thick(ink),
+                  boxShadow: NeoShadows.md(ink),
                 ),
-                child: const Icon(LucideIcons.wallet, size: 48, color: Color(0xFF10B981)),
+                child: Icon(LucideIcons.wallet, size: 48,
+                    color: NeoColors.inkLight),
               ),
               const SizedBox(height: 24),
-              const Text('Cash Flow', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              Text('CASH FLOW', style: NeoText.display(24, color: ink)),
               const SizedBox(height: 8),
               FutureBuilder<PackageInfo>(
                 future: PackageInfo.fromPlatform(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    return Text('${l10n.translate('version')} ${snapshot.data!.version}+${snapshot.data!.buildNumber}', style: TextStyle(color: Colors.grey.shade500));
+                    return Text(
+                      '${l10n.translate('version')} ${snapshot.data!.version}+${snapshot.data!.buildNumber}',
+                      style: NeoText.label(11,
+                          color: ink.withValues(alpha: 0.6)),
+                    );
                   }
                   return const SizedBox();
                 },
               ),
               const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton.icon(
-                  onPressed: _checking ? null : _checkUpdate,
-                  icon: _checking ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(LucideIcons.download),
-                  label: Text(_checking ? l10n.translate('checking') : l10n.translate('check_update')),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF10B981),
-                    side: const BorderSide(color: Color(0xFF10B981)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
+              NeoButton(
+                label: _checking
+                    ? l10n.translate('checking')
+                    : l10n.translate('check_update'),
+                icon: LucideIcons.download,
+                loading: _checking,
+                expanded: true,
+                onPressed: _checking ? null : _checkUpdate,
               ),
               const SizedBox(height: 24),
               Text(
                 l10n.translate('made_with'),
-                style: TextStyle(fontSize: 12, color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
-              )
+                style: NeoText.body(11, color: ink.withValues(alpha: 0.5)),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),

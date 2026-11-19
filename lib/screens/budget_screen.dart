@@ -4,13 +4,16 @@ import '../data/cashflow_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../models/budget.dart';
 import '../models/category.dart';
+import '../theme/neo_theme.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
+import '../widgets/neo_button.dart';
+import '../widgets/neo_dialog.dart';
+import '../widgets/neo_input.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
-
   @override
   State<BudgetScreen> createState() => _BudgetScreenState();
 }
@@ -37,10 +40,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final budgets = await _repo.getBudgets(walletId);
     final now = DateTime.now();
 
-    final Map<String, Budget> budgetMap = {};
-    for (final b in budgets) { budgetMap[b.categoryName] = b; }
+    final budgetMap = <String, Budget>{};
+    for (final b in budgets) {
+      budgetMap[b.categoryName] = b;
+    }
 
-    final Map<String, double> spentMap = {};
+    final spentMap = <String, double>{};
     for (final c in cats) {
       spentMap[c.name] = await _repo.getSpentForCategory(
         walletId: walletId,
@@ -62,34 +67,48 @@ class _BudgetScreenState extends State<BudgetScreen> {
   Future<void> _editBudget(Category c) async {
     final l10n = AppLocalizations.of(context)!;
     final existing = _budgets[c.name];
-    final ctrl = TextEditingController(text: existing?.limitAmount.toStringAsFixed(0) ?? '');
-    
-    final result = await showDialog<double>(
+    final ctrl = TextEditingController(
+        text: existing?.limitAmount.toStringAsFixed(0) ?? '');
+
+    final result = await showNeoDialog<double>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text('${l10n.translate('budget')}: ${c.name}'),
-        content: TextField(
-          controller: ctrl,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Batas Maksimal (IDR)', prefixText: 'IDR '),
-          autofocus: true,
-        ),
-        actions: [
-          if (existing != null)
-            TextButton(
-              onPressed: () async {
-                await _repo.deleteBudget(existing.id!);
-                if (!mounted) return;
-                Navigator.pop(context);
-                _load();
-                AppEvents.notify();
-              }, 
-              child: Text(l10n.translate('delete'), style: const TextStyle(color: Colors.red)),
-            ),
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.translate('cancel'))),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, double.tryParse(ctrl.text) ?? 0),
-            child: Text(l10n.translate('save')),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NeoDialogTitle('${l10n.translate('budget')} — ${c.name}'),
+          NeoInput(
+            controller: ctrl,
+            label: 'Batas Maksimal (IDR)',
+            hint: '0',
+            prefixIcon: LucideIcons.banknote,
+            keyboardType: TextInputType.number,
+          ),
+          NeoDialogActions(
+            children: [
+              if (existing != null)
+                NeoButton(
+                  label: l10n.translate('delete'),
+                  variant: NeoButtonVariant.danger,
+                  onPressed: () async {
+                    await _repo.deleteBudget(existing.id!);
+                    if (!mounted) return;
+                    Navigator.pop(context);
+                    _load();
+                    AppEvents.notify();
+                  },
+                ),
+              NeoButton(
+                label: l10n.translate('cancel'),
+                variant: NeoButtonVariant.secondary,
+                onPressed: () => Navigator.pop(context),
+              ),
+              NeoButton(
+                label: l10n.translate('save'),
+                onPressed: () =>
+                    Navigator.pop(context, double.tryParse(ctrl.text) ?? 0),
+              ),
+            ],
           ),
         ],
       ),
@@ -109,17 +128,17 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ink = Neo.ink(context);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: Icon(LucideIcons.arrowLeft, color: ink),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(l10n.translate('budget'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: Text(l10n.translate('budget'),
+            style: NeoText.display(18, color: ink)),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -133,64 +152,89 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 final spent = _spent[c.name] ?? 0.0;
                 final limit = b?.limitAmount ?? 0.0;
                 final isOver = limit > 0 && spent > limit;
-                
                 double pct = limit > 0 ? (spent / limit) : 0.0;
                 if (pct > 1.0) pct = 1.0;
 
-                return Material(
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(
-                      color: isOver 
-                          ? Colors.red.withValues(alpha: 0.5) 
-                          : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200)
+                return GestureDetector(
+                  onTap: () => _editBudget(c),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Neo.paper(context),
+                      borderRadius: BorderRadius.circular(NeoRadius.lg),
+                      border: isOver
+                          ? Border.all(color: NeoColors.red, width: 3)
+                          : NeoBorders.reg(ink),
+                      boxShadow: NeoShadows.sm(ink),
                     ),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () => _editBudget(c),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(c.name,
+                                  style: NeoText.display(14, color: ink)),
+                            ),
+                            Icon(LucideIcons.pencil,
+                                size: 16, color: ink.withValues(alpha: 0.5)),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (limit == 0)
+                          Text(l10n.translate('no_budget'),
+                              style: NeoText.body(12,
+                                  color: ink.withValues(alpha: 0.5)))
+                        else ...[
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                              Icon(LucideIcons.pencil, size: 16, color: Colors.grey.shade400),
+                              Text(
+                                formatCurrency(spent),
+                                style: NeoText.label(12,
+                                    color: isOver
+                                        ? NeoColors.red
+                                        : NeoColors.green),
+                              ),
+                              Text('dari ${formatCurrency(limit)}',
+                                  style: NeoText.label(10,
+                                      color: ink.withValues(alpha: 0.5))),
                             ],
                           ),
-                          const SizedBox(height: 12),
-                          if (limit == 0)
-                            Text(l10n.translate('no_budget'), style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
-                          else ...[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(formatCurrency(spent), style: TextStyle(fontWeight: FontWeight.bold, color: isOver ? Colors.red : const Color(0xFF10B981), fontSize: 13)),
-                                Text('dari ${formatCurrency(limit)}', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            ClipRRect(
+                          const SizedBox(height: 8),
+                          Container(
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Neo.paper(context),
                               borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: pct,
-                                minHeight: 8,
-                                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade100,
-                                color: isOver ? Colors.red : const Color(0xFF10B981),
+                              border: NeoBorders.thin(ink),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: pct.clamp(0.0, 1.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: isOver
+                                      ? NeoColors.red
+                                      : NeoColors.lime,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
                               ),
                             ),
-                            if (isOver)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text('Melebihi anggaran sebesar ${formatCurrency(spent - limit)}!', style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ),
+                          if (isOver)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                'Melebihi anggaran sebesar ${formatCurrency(spent - limit)}!',
+                                style: NeoText.body(11,
+                                    weight: FontWeight.w700,
+                                    color: NeoColors.red),
                               ),
-                          ]
+                            ),
                         ],
-                      ),
+                      ],
                     ),
                   ),
                 );

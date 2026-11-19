@@ -9,9 +9,12 @@ import '../l10n/app_localizations.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../services/attachment_service.dart';
+import '../theme/neo_theme.dart';
 import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
+import '../widgets/neo_button.dart';
+import '../widgets/neo_input.dart';
 import 'category_management_screen.dart';
 
 class TransactionFormScreen extends StatefulWidget {
@@ -34,9 +37,9 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   List<Category> _categories = [];
   bool _saving = false;
 
-  List<String> _existingAttachments = []; 
-  final List<String> _newTempAttachments = [];  
-  final List<String> _deletedAttachments = []; 
+  List<String> _existingAttachments = [];
+  final List<String> _newTempAttachments = [];
+  final List<String> _deletedAttachments = [];
 
   bool get _isEditing => widget.editing != null;
 
@@ -98,7 +101,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Gagal: $e')));
     }
   }
 
@@ -125,7 +129,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal buka: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Gagal buka: $e')));
     }
   }
 
@@ -154,7 +159,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         categoryName: _category!.name,
         dateMillis: _date.millisecondsSinceEpoch,
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
-        attachments: finalAttachments, 
+        attachments: finalAttachments,
       );
 
       if (_isEditing) {
@@ -169,7 +174,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal simpan: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Gagal simpan: $e')));
     }
   }
 
@@ -183,11 +189,14 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         title: Text(l10n.translate('delete_confirm')),
         content: Text('"${widget.editing!.title}" ${l10n.translate('delete_msg')}'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.translate('cancel'))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.translate('cancel')),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)), 
-            onPressed: () => Navigator.pop(context, true), 
-            child: Text(l10n.translate('delete'))
+            style: FilledButton.styleFrom(backgroundColor: NeoColors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.translate('delete')),
           ),
         ],
       ),
@@ -197,7 +206,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     try {
       await _repo.deleteTransaction(id);
       for (final file in widget.editing!.attachments) {
-        await AttachmentService.delete(file); 
+        await AttachmentService.delete(file);
       }
       AppEvents.notify();
       if (!mounted) return;
@@ -205,160 +214,82 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal hapus: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Gagal hapus: $e')));
     }
   }
 
-  Widget _buildHairlineInput({
-    required Widget leading,
-    required String label,
-    required Widget child,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          SizedBox(
-            width: 40,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: leading,
-            ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                child,
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // ── TYPE TOGGLE (Neo) ─────────────────────────────────
+  Widget _buildTypeToggle() {
+    final ink = Neo.ink(context);
+    final isIncome = _type == 'INCOME';
 
-  Widget _buildAttachmentSection() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(
-          l10n.translate('attachment').toUpperCase(),
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-            color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+        Expanded(
+          child: GestureDetector(
+            onTap: _saving
+                ? null
+                : () {
+                    setState(() {
+                      _type = 'INCOME';
+                      _category = null;
+                    });
+                    _loadCategories();
+                  },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: isIncome ? NeoColors.lime : Neo.paper(context),
+                borderRadius: BorderRadius.circular(NeoRadius.reg),
+                border: NeoBorders.reg(ink),
+                boxShadow: isIncome ? NeoShadows.sm(ink) : null,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(LucideIcons.arrowDownLeft, size: 16,
+                      color: NeoColors.inkLight),
+                  const SizedBox(width: 6),
+                  Text(l10nIncomeLabel(), style: NeoText.label(11,
+                      color: NeoColors.inkLight)),
+                ],
+              ),
+            ),
           ),
         ),
-        const SizedBox(height: 12),
-
-        ..._existingAttachments.map((path) => Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(LucideIcons.paperclip, color: Color(0xFF10B981), size: 16),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(l10n.translate('saved_attachment'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF059669))),
-              ),
-              IconButton(
-                icon: const Icon(LucideIcons.eye, size: 20),
-                onPressed: () => _viewFile(path),
-                color: Colors.grey,
-              ),
-              IconButton(
-                icon: const Icon(LucideIcons.x, size: 20),
-                onPressed: () => _removeExisting(path),
-                color: Colors.grey,
-              ),
-            ],
-          ),
-        )),
-
-        ..._newTempAttachments.map((path) => Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.orange.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(LucideIcons.cloudUpload, color: Colors.orange, size: 16),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(p.basename(path), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
-                    Text(l10n.translate('unsaved_attachment'), style: const TextStyle(fontSize: 10, color: Colors.orange)),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(LucideIcons.eye, size: 20),
-                onPressed: () => _viewFile(path, isTemp: true),
-                color: Colors.grey,
-              ),
-              IconButton(
-                icon: const Icon(LucideIcons.x, size: 20),
-                onPressed: () => _removeNewTemp(path),
-                color: Colors.grey,
-              ),
-            ],
-          ),
-        )),
-
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: _saving ? null : _pickAttachment,
-            icon: const Icon(LucideIcons.plus, size: 18),
-            label: Text(l10n.translate('add_attachment')),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF10B981),
+        const SizedBox(width: 10),
+        Expanded(
+          child: GestureDetector(
+            onTap: _saving
+                ? null
+                : () {
+                    setState(() {
+                      _type = 'EXPENSE';
+                      _category = null;
+                    });
+                    _loadCategories();
+                  },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
               padding: const EdgeInsets.symmetric(vertical: 14),
-              side: BorderSide(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: !isIncome ? NeoColors.pink : Neo.paper(context),
+                borderRadius: BorderRadius.circular(NeoRadius.reg),
+                border: NeoBorders.reg(ink),
+                boxShadow: !isIncome ? NeoShadows.sm(ink) : null,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(LucideIcons.arrowUpRight, size: 16,
+                      color: NeoColors.inkLight),
+                  const SizedBox(width: 6),
+                  Text(l10nExpenseLabel(), style: NeoText.label(11,
+                      color: NeoColors.inkLight)),
+                ],
+              ),
             ),
           ),
         ),
@@ -366,28 +297,231 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     );
   }
 
+  String l10nIncomeLabel() =>
+      AppLocalizations.of(context)!.translate('income').toUpperCase();
+  String l10nExpenseLabel() =>
+      AppLocalizations.of(context)!.translate('expense').toUpperCase();
+
+  // ── CATEGORY DROPDOWN (Neo) ───────────────────────────
+  Widget _buildCategoryField() {
+    final ink = Neo.ink(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: Neo.paper(context),
+        borderRadius: BorderRadius.circular(NeoRadius.reg),
+        border: NeoBorders.reg(ink),
+        boxShadow: NeoShadows.sm(ink),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<Category>(
+                value: _category,
+                isExpanded: true,
+                dropdownColor: Neo.paper(context),
+                icon: Icon(LucideIcons.chevronDown, size: 20, color: ink),
+                style: NeoText.body(14, weight: FontWeight.w600, color: ink),
+                onChanged: _saving
+                    ? null
+                    : (c) => setState(() => _category = c),
+                items: _categories
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
+                    .toList(),
+              ),
+            ),
+          ),
+          Container(width: 2, height: 24, color: ink.withValues(alpha: 0.2)),
+          IconButton(
+            tooltip: l10n.translate('manage_category'),
+            icon: const Icon(LucideIcons.slidersHorizontal,
+                size: 20, color: NeoColors.inkLight),
+            onPressed: _saving
+                ? null
+                : () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const CategoryManagementScreen()),
+                    );
+                    _loadCategories();
+                  },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── DATE FIELD (Neo) ──────────────────────────────────
+  Widget _buildDateField() {
+    final ink = Neo.ink(context);
+    return GestureDetector(
+      onTap: _saving ? null : _pickDate,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        decoration: BoxDecoration(
+          color: Neo.paper(context),
+          borderRadius: BorderRadius.circular(NeoRadius.reg),
+          border: NeoBorders.reg(ink),
+          boxShadow: NeoShadows.sm(ink),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(LucideIcons.calendarDays, size: 18, color: ink),
+                const SizedBox(width: 10),
+                Text(formatDate(_date),
+                    style: NeoText.body(14, weight: FontWeight.w600, color: ink)),
+              ],
+            ),
+            Icon(LucideIcons.pencil, size: 16,
+                color: ink.withValues(alpha: 0.5)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── ATTACHMENT SECTION (Neo) ──────────────────────────
+  Widget _buildAttachmentSection() {
+    final ink = Neo.ink(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(l10n.translate('attachment').toUpperCase(),
+              style: NeoText.label(10, color: ink)),
+        ),
+
+        ..._existingAttachments.map((path) => _buildAttachmentRow(
+              ink: ink,
+              label: l10n.translate('saved_attachment'),
+              subtitle: null,
+              iconBg: NeoColors.lime,
+              icon: LucideIcons.paperclip,
+              onView: () => _viewFile(path),
+              onRemove: () => _removeExisting(path),
+            )),
+
+        ..._newTempAttachments.map((path) => _buildAttachmentRow(
+              ink: ink,
+              label: p.basename(path),
+              subtitle: l10n.translate('unsaved_attachment'),
+              iconBg: NeoColors.orange,
+              icon: LucideIcons.cloudUpload,
+              onView: () => _viewFile(path, isTemp: true),
+              onRemove: () => _removeNewTemp(path),
+            )),
+
+        const SizedBox(height: 6),
+        NeoButton(
+          label: l10n.translate('add_attachment'),
+          icon: LucideIcons.plus,
+          variant: NeoButtonVariant.ghost,
+          expanded: true,
+          onPressed: _saving ? null : _pickAttachment,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAttachmentRow({
+    required Color ink,
+    required String label,
+    required String? subtitle,
+    required Color iconBg,
+    required IconData icon,
+    required VoidCallback onView,
+    required VoidCallback onRemove,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Neo.paper(context),
+          borderRadius: BorderRadius.circular(NeoRadius.reg),
+          border: NeoBorders.reg(ink),
+          boxShadow: NeoShadows.sm(ink),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: iconBg,
+                border: NeoBorders.thin(ink),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 16, color: NeoColors.inkLight),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: NeoText.body(12, weight: FontWeight.w700, color: ink),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(subtitle,
+                        style: NeoText.label(9,
+                            color: ink.withValues(alpha: 0.6))),
+                  ],
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(LucideIcons.eye, size: 18,
+                  color: ink.withValues(alpha: 0.7)),
+              onPressed: onView,
+            ),
+            IconButton(
+              icon: Icon(LucideIcons.x, size: 18,
+                  color: ink.withValues(alpha: 0.7)),
+              onPressed: onRemove,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accentColor = _type == 'INCOME' ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final ink = Neo.ink(context);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: Icon(LucideIcons.arrowLeft, color: ink),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          _isEditing ? l10n.translate('edit_transaction') : l10n.translate('new_transaction'), 
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
+          _isEditing
+              ? l10n.translate('edit_transaction')
+              : l10n.translate('new_transaction'),
+          style: NeoText.display(18, color: ink),
         ),
-        centerTitle: true,
         actions: [
           if (_isEditing)
             IconButton(
               tooltip: l10n.translate('delete'),
-              icon: const Icon(LucideIcons.trash2, color: Color(0xFFEF4444)),
+              icon: const Icon(LucideIcons.trash2, color: NeoColors.red),
               onPressed: _saving ? null : _delete,
             ),
         ],
@@ -397,215 +531,88 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           children: [
-            Container(
-              height: 48,
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
-              ),
-              child: Stack(
-                children: [
-                  AnimatedAlign(
-                    alignment: _type == 'INCOME' ? Alignment.centerLeft : Alignment.centerRight,
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutCubic,
-                    child: FractionallySizedBox(
-                      widthFactor: 0.5,
-                      heightFactor: 1.0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade300
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: _saving ? null : () { setState(() { _type = 'INCOME'; _category = null; }); _loadCategories(); },
-                          behavior: HitTestBehavior.opaque,
-                          child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(LucideIcons.check, size: 14, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey),
-                                const SizedBox(width: 6),
-                                Text(l10n.translate('income'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'INCOME' ? const Color(0xFF10B981) : Colors.grey)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: _saving ? null : () { setState(() { _type = 'EXPENSE'; _category = null; }); _loadCategories(); },
-                          behavior: HitTestBehavior.opaque,
-                          child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(LucideIcons.arrowUpRight, size: 14, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey),
-                                const SizedBox(width: 6),
-                                Text(l10n.translate('expense'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _type == 'EXPENSE' ? const Color(0xFFEF4444) : Colors.grey)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
+            _buildTypeToggle(),
+            const SizedBox(height: 24),
 
-            _buildHairlineInput(
-              leading: Icon(LucideIcons.type, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
+            NeoInput(
+              controller: _titleCtrl,
               label: l10n.translate('title'),
-              child: TextFormField(
-                controller: _titleCtrl,
-                textCapitalization: TextCapitalization.sentences,
-                style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-                decoration: InputDecoration(
-                  hintText: l10n.translate('title_hint'),
-                  isDense: true,
-                  contentPadding: const EdgeInsets.only(bottom: 8),
-                ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
-              ),
+              hint: l10n.translate('title_hint'),
+              prefixIcon: LucideIcons.type,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
             ),
+            const SizedBox(height: 16),
 
-            _buildHairlineInput(
-              leading: Text(
-                'IDR', 
-                style: TextStyle(
-                  fontWeight: FontWeight.bold, 
-                  fontSize: 13, 
-                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade500
-                )
-              ),
+            NeoInput(
+              controller: _amountCtrl,
               label: l10n.translate('amount'),
-              child: TextFormField(
-                controller: _amountCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')), CurrencyInputFormatter()],
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-                decoration: const InputDecoration(
-                  isDense: true,
-                  contentPadding: EdgeInsets.only(bottom: 8),
-                ),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Wajib diisi';
-                  final n = double.tryParse(v.replaceAll(',', ''));
-                  if (n == null || n <= 0) return 'Tidak valid';
-                  return null;
-                },
-              ),
+              hint: '0',
+              prefixIcon: LucideIcons.banknote,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                CurrencyInputFormatter(),
+              ],
+              textStyle: NeoText.display(24, color: ink),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Wajib diisi';
+                final n = double.tryParse(v.replaceAll(',', ''));
+                if (n == null || n <= 0) return 'Tidak valid';
+                return null;
+              },
             ),
+            const SizedBox(height: 16),
 
-            _buildHairlineInput(
-              leading: Icon(LucideIcons.shapes, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
-              label: l10n.translate('category'),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<Category>(
-                        value: _category,
-                        isExpanded: true,
-                        icon: const Icon(LucideIcons.chevronDown, size: 20, color: Colors.grey),
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: isDark ? Colors.white : Colors.black87),
-                        onChanged: _saving ? null : (c) => setState(() => _category = c),
-                        items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: l10n.translate('manage_category'),
-                    icon: const Icon(LucideIcons.slidersHorizontal, size: 20, color: Color(0xFF10B981)),
-                    onPressed: _saving ? null : () async {
-                      await Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryManagementScreen()));
-                      _loadCategories();
-                    },
-                  ),
-                ],
-              ),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 6),
+              child: Text(l10n.translate('category').toUpperCase(),
+                  style: NeoText.label(10, color: ink)),
             ),
+            _buildCategoryField(),
+            const SizedBox(height: 16),
 
-            _buildHairlineInput(
-              leading: Icon(LucideIcons.calendarDays, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
-              label: l10n.translate('date'),
-              child: InkWell(
-                onTap: _saving ? null : _pickDate,
-                child: Container(
-                  padding: const EdgeInsets.only(bottom: 8, top: 4),
-                  decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade300, width: 1)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(formatDate(_date), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                      const Icon(LucideIcons.pencil, size: 16, color: Colors.grey),
-                    ],
-                  ),
-                ),
-              ),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 6),
+              child: Text(l10n.translate('date').toUpperCase(),
+                  style: NeoText.label(10, color: ink)),
             ),
+            _buildDateField(),
+            const SizedBox(height: 16),
 
-            _buildHairlineInput(
-              leading: Icon(LucideIcons.alignLeft, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, size: 20),
+            NeoInput(
+              controller: _noteCtrl,
               label: l10n.translate('note'),
-              child: TextFormField(
-                controller: _noteCtrl,
-                maxLines: 2,
-                textCapitalization: TextCapitalization.sentences,
-                style: const TextStyle(fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: l10n.translate('note_hint'),
-                  isDense: true,
-                  contentPadding: const EdgeInsets.only(bottom: 8),
-                ),
-              ),
+              hint: l10n.translate('note_hint'),
+              prefixIcon: LucideIcons.alignLeft,
+              maxLines: 2,
             ),
+            const SizedBox(height: 24),
 
-            const SizedBox(height: 12),
-            
             _buildAttachmentSection(),
-            
             const SizedBox(height: 40),
           ],
         ),
       ),
-      
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF121212) : const Color(0xFFF3F4F6),
-          border: Border(top: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200)),
+          color: Neo.paper(context),
+          border: Border(top: BorderSide(color: ink, width: 4)),
         ),
         child: SafeArea(
-          child: SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: FilledButton(
-              onPressed: _saving ? null : _save,
-              style: FilledButton.styleFrom(
-                backgroundColor: accentColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 0,
-              ),
-              child: _saving
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(_isEditing ? l10n.translate('update') : l10n.translate('save'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
+          child: NeoButton(
+            label: _isEditing
+                ? l10n.translate('update')
+                : l10n.translate('save'),
+            expanded: true,
+            loading: _saving,
+            icon: _isEditing ? LucideIcons.checkCheck : LucideIcons.check,
+            variant: _type == 'INCOME'
+                ? NeoButtonVariant.income
+                : NeoButtonVariant.expense,
+            onPressed: _saving ? null : _save,
           ),
         ),
       ),

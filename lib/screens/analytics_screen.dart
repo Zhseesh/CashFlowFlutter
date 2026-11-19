@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import '../data/cashflow_repository.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/neo_theme.dart';
 import '../utils/app_state.dart';
 import '../utils/formatters.dart';
 
@@ -37,12 +38,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Future<void> _load() async {
     final walletId = AppState.activeWalletId;
     if (walletId == null) return;
-    
+
     setState(() => _loading = true);
     final monthly = await _repo.monthlyTotals(_year, walletId: walletId);
     final start = DateTime(_year, _month, 1);
     final end = DateTime(_year, _month + 1, 0, 23, 59, 59);
-    final breakdown = await _repo.categoryBreakdown('EXPENSE', walletId: walletId, from: start, to: end);
+    final breakdown = await _repo.categoryBreakdown('EXPENSE',
+        walletId: walletId, from: start, to: end);
     if (!mounted) return;
     setState(() {
       _monthly = monthly;
@@ -62,12 +64,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ink = Neo.ink(context);
     final l10n = AppLocalizations.of(context)!;
     final totalBreak = _breakdown.fold<double>(0, (p, e) => p + e.total);
-    
-    final monthNames = List.generate(12, (i) => 
-      DateFormat('MMM', Localizations.localeOf(context).languageCode).format(DateTime(2024, i + 1, 1))
+
+    final monthNames = List.generate(
+      12,
+      (i) => DateFormat('MMM', Localizations.localeOf(context).languageCode)
+          .format(DateTime(2024, i + 1, 1)),
     );
 
     return Scaffold(
@@ -78,16 +82,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             : ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 children: [
-                  Text(l10n.translate('analytics'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  Text(l10n.translate('analytics').toUpperCase(),
+                      style: NeoText.display(22, color: ink)),
                   const SizedBox(height: 20),
 
+                  // ── YEARLY CHART CARD (Cyan) ──────────────────
                   Container(
                     padding: const EdgeInsets.all(20),
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                      color: NeoColors.cyan,
+                      borderRadius: BorderRadius.circular(NeoRadius.lg),
+                      border: NeoBorders.thick(ink),
+                      boxShadow: NeoShadows.md(ink),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,35 +102,55 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(l10n.translate('yearly_chart'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            Text(
+                              l10n.translate('yearly_chart').toUpperCase(),
+                              style: NeoText.label(11,
+                                  color: NeoColors.inkLight),
+                            ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200),
+                                color: NeoColors.paperLight,
+                                border: NeoBorders.thin(NeoColors.inkLight),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
                                 children: [
                                   IconButton(
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
-                                    icon: const Icon(LucideIcons.chevronLeft, size: 16),
-                                    onPressed: () { setState(() => _year--); _load(); },
+                                    iconSize: 18,
+                                    icon: const Icon(LucideIcons.chevronLeft,
+                                        size: 18, color: NeoColors.inkLight),
+                                    onPressed: () {
+                                      setState(() => _year--);
+                                      _load();
+                                    },
                                   ),
-                                  Text('$_year', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6),
+                                    child: Text('$_year',
+                                        style: NeoText.label(12,
+                                            color: NeoColors.inkLight)),
+                                  ),
                                   IconButton(
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
-                                    icon: const Icon(LucideIcons.chevronRight, size: 16),
-                                    onPressed: () { setState(() => _year++); _load(); },
+                                    icon: const Icon(LucideIcons.chevronRight,
+                                        size: 18, color: NeoColors.inkLight),
+                                    onPressed: () {
+                                      setState(() => _year++);
+                                      _load();
+                                    },
                                   ),
                                 ],
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         SizedBox(
                           height: 180,
                           child: BarChart(
@@ -131,46 +158,49 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               alignment: BarChartAlignment.spaceAround,
                               maxY: _maxY(),
                               barTouchData: BarTouchData(enabled: false),
-                              gridData: FlGridData(
-                                show: true, 
-                                drawVerticalLine: false,
-                                getDrawingHorizontalLine: (value) => FlLine(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200,
-                                  strokeWidth: 1,
-                                  dashArray: [4, 4],
-                                ),
-                              ),
+                              gridData: const FlGridData(show: false),
                               borderData: FlBorderData(show: false),
                               titlesData: FlTitlesData(
-                                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                topTitles: const AxisTitles(
+                                    sideTitles:
+                                        SideTitles(showTitles: false)),
+                                rightTitles: const AxisTitles(
+                                    sideTitles:
+                                        SideTitles(showTitles: false)),
+                                leftTitles: const AxisTitles(
+                                    sideTitles:
+                                        SideTitles(showTitles: false)),
                                 bottomTitles: AxisTitles(
                                   sideTitles: SideTitles(
                                     showTitles: true,
                                     getTitlesWidget: (v, _) => Padding(
                                       padding: const EdgeInsets.only(top: 8),
-                                      child: Text(monthNames[v.toInt() - 1], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+                                      child: Text(
+                                        monthNames[v.toInt() - 1],
+                                        style: NeoText.label(9,
+                                            color: NeoColors.inkLight),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                               barGroups: List.generate(12, (i) {
                                 final m = i + 1;
-                                final d = _monthly[m] ?? (income: 0.0, expense: 0.0);
+                                final d = _monthly[m] ??
+                                    (income: 0.0, expense: 0.0);
                                 return BarChartGroupData(
                                   x: m,
                                   barsSpace: 2,
                                   barRods: [
                                     BarChartRodData(
                                       toY: d.income,
-                                      color: isDark ? const Color(0xFF064E3B) : const Color(0xFFA7F3D0),
+                                      color: NeoColors.lime,
                                       width: 6,
                                       borderRadius: BorderRadius.circular(2),
                                     ),
                                     BarChartRodData(
                                       toY: d.expense,
-                                      color: const Color(0xFF10B981),
+                                      color: NeoColors.pink,
                                       width: 6,
                                       borderRadius: BorderRadius.circular(2),
                                     ),
@@ -180,16 +210,29 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _legend(NeoColors.lime,
+                                l10n.translate('income'), ink),
+                            const SizedBox(width: 16),
+                            _legend(NeoColors.pink,
+                                l10n.translate('expense'), ink),
+                          ],
+                        ),
                       ],
                     ),
                   ),
 
+                  // ── EXPENSE BREAKDOWN CARD ─────────────────────
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                      color: Neo.paper(context),
+                      borderRadius: BorderRadius.circular(NeoRadius.lg),
+                      border: NeoBorders.reg(ink),
+                      boxShadow: NeoShadows.sm(ink),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,17 +240,41 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(l10n.translate('expense_breakdown'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                            DropdownButtonHideUnderline(
-                              child: DropdownButton<int>(
-                                value: _month,
-                                icon: const Icon(LucideIcons.chevronDown, size: 16),
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
-                                items: List.generate(12, (i) => DropdownMenuItem(
-                                  value: i + 1, 
-                                  child: Text(monthNames[i]),
-                                )),
-                                onChanged: (v) { setState(() => _month = v!); _load(); },
+                            Expanded(
+                              child: Text(
+                                l10n.translate('expense_breakdown').toUpperCase(),
+                                style: NeoText.display(14, color: ink),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: NeoColors.purple,
+                                borderRadius: BorderRadius.circular(8),
+                                border: NeoBorders.thin(ink),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<int>(
+                                  value: _month,
+                                  isDense: true,
+                                  dropdownColor: NeoColors.purple,
+                                  icon: Icon(LucideIcons.chevronDown,
+                                      size: 16, color: ink),
+                                  style: NeoText.label(11,
+                                      color: NeoColors.inkLight),
+                                  items: List.generate(
+                                    12,
+                                    (i) => DropdownMenuItem(
+                                      value: i + 1,
+                                      child: Text(monthNames[i]),
+                                    ),
+                                  ),
+                                  onChanged: (v) {
+                                    setState(() => _month = v!);
+                                    _load();
+                                  },
+                                ),
                               ),
                             ),
                           ],
@@ -217,36 +284,63 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 24),
                             child: Center(
-                              child: Text(l10n.translate('no_expense_month'), style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              child: Text(
+                                l10n.translate('no_expense_month'),
+                                style: NeoText.body(12,
+                                    color: ink.withValues(alpha: 0.5)),
+                              ),
                             ),
                           )
                         else
                           ..._breakdown.map((b) {
-                            final pct = totalBreak == 0 ? 0.0 : b.total / totalBreak;
+                            final pct =
+                                totalBreak == 0 ? 0.0 : b.total / totalBreak;
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.only(bottom: 14),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(b.category, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                                      Text('${(pct * 100).toStringAsFixed(1)}%', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                      Expanded(
+                                        child: Text(b.category,
+                                            style: NeoText.body(13,
+                                                weight: FontWeight.w600,
+                                                color: ink)),
+                                      ),
+                                      Text(
+                                        '${(pct * 100).toStringAsFixed(1)}%',
+                                        style: NeoText.label(11,
+                                            color: ink.withValues(alpha: 0.6)),
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 6),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: LinearProgressIndicator(
-                                      value: pct,
-                                      minHeight: 6,
-                                      backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade100,
-                                      color: const Color(0xFF10B981),
+                                  Container(
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: Neo.paper(context),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: NeoBorders.thin(ink),
+                                    ),
+                                    child: FractionallySizedBox(
+                                      alignment: Alignment.centerLeft,
+                                      widthFactor: pct.clamp(0.0, 1.0),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: NeoColors.pink,
+                                          borderRadius:
+                                              BorderRadius.circular(2),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(formatCurrency(b.total), style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                  Text(formatCurrency(b.total),
+                                      style: NeoText.label(10,
+                                          color: ink.withValues(alpha: 0.5))),
                                 ],
                               ),
                             );
@@ -259,6 +353,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ],
               ),
       ),
+    );
+  }
+
+  Widget _legend(Color color, String label, Color ink) {
+    return Row(
+      children: [
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            color: color,
+            border: NeoBorders.thin(ink),
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(label.toUpperCase(),
+            style: NeoText.label(9, color: NeoColors.inkLight)),
+      ],
     );
   }
 }

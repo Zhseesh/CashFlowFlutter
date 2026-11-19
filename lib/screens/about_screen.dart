@@ -8,6 +8,7 @@ import '../l10n/app_localizations.dart';
 import '../theme/neo_theme.dart';
 import '../widgets/neo_button.dart';
 import '../widgets/neo_dialog.dart';
+import '../widgets/neo_toast.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -122,9 +123,7 @@ class _AboutScreenState extends State<AboutScreen> {
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.translate('error_update'))),
-      );
+      NeoToast.show(context, (l10n.translate('error_update')));
     } finally {
       if (mounted) setState(() => _checking = false);
     }

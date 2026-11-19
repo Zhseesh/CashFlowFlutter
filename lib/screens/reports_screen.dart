@@ -17,6 +17,8 @@ import '../utils/app_events.dart';
 import '../utils/app_state.dart';
 import '../widgets/neo_button.dart';
 import '../widgets/neo_dialog.dart';
+import '../widgets/neo_dropdown.dart';
+import '../widgets/neo_toast.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -30,7 +32,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   void _toast(String m) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+    // Menggunakan NeoToast yang muncul melayang di atas navbar
+    NeoToast.show(context, m);
   }
 
   Future<void> _run(Future<void> Function() fn) async {
@@ -64,9 +67,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const NeoDialogTitle('Pilih Periode Laporan'),
-              DropdownButtonFormField<int>(
-                initialValue: selectedMonth,
-                decoration: const InputDecoration(labelText: 'Bulan'),
+              NeoDropdown<int>(
+                label: 'Bulan',
+                value: selectedMonth,
                 items: List.generate(
                   12,
                   (i) => DropdownMenuItem(
@@ -80,9 +83,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 onChanged: (v) => setLocal(() => selectedMonth = v!),
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                initialValue: selectedYear,
-                decoration: const InputDecoration(labelText: 'Tahun'),
+              NeoDropdown<int>(
+                label: 'Tahun',
+                value: selectedYear,
                 items: List.generate(
                   10,
                   (i) => DropdownMenuItem(

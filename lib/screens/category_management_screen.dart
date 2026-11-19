@@ -8,6 +8,7 @@ import '../widgets/neo_button.dart';
 import '../widgets/neo_dialog.dart';
 import '../widgets/neo_fab.dart';
 import '../widgets/neo_input.dart';
+import '../widgets/neo_skeleton.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});
@@ -248,7 +249,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen>
         ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: NeoSkeleton(width: double.infinity, height: 80))
           : TabBarView(
               controller: _tabController,
               children: [

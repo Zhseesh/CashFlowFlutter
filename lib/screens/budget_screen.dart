@@ -11,6 +11,7 @@ import '../utils/formatters.dart';
 import '../widgets/neo_button.dart';
 import '../widgets/neo_dialog.dart';
 import '../widgets/neo_input.dart';
+import '../widgets/neo_skeleton.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -141,7 +142,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
             style: NeoText.display(18, color: ink)),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: NeoSkeleton(width: double.infinity, height: 80))
           : ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: _categories.length,

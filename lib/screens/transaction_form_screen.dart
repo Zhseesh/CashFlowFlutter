@@ -15,6 +15,9 @@ import '../utils/app_state.dart';
 import '../utils/formatters.dart';
 import '../widgets/neo_button.dart';
 import '../widgets/neo_input.dart';
+import '../widgets/neo_dropdown.dart';
+import '../widgets/neo_toast.dart';
+import '../widgets/neo_fab.dart';
 import 'category_management_screen.dart';
 
 class TransactionFormScreen extends StatefulWidget {
@@ -101,8 +104,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Gagal: $e')));
+      NeoToast.show(context, 'Gagal: $e');
     }
   }
 
@@ -129,8 +131,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Gagal buka: $e')));
+      NeoToast.show(context, 'Gagal buka: $e');
     }
   }
 
@@ -174,8 +175,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Gagal simpan: $e')));
+      NeoToast.show(context, 'Gagal simpan: $e');
     }
   }
 
@@ -214,8 +214,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Gagal hapus: $e')));
+      NeoToast.show(context, 'Gagal hapus: $e');
     }
   }
 
@@ -304,54 +303,35 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
   // ── CATEGORY DROPDOWN (Neo) ───────────────────────────
   Widget _buildCategoryField() {
-    final ink = Neo.ink(context);
     final l10n = AppLocalizations.of(context)!;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      decoration: BoxDecoration(
-        color: Neo.paper(context),
-        borderRadius: BorderRadius.circular(NeoRadius.reg),
-        border: NeoBorders.reg(ink),
-        boxShadow: NeoShadows.sm(ink),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<Category>(
-                value: _category,
-                isExpanded: true,
-                dropdownColor: Neo.paper(context),
-                icon: Icon(LucideIcons.chevronDown, size: 20, color: ink),
-                style: NeoText.body(14, weight: FontWeight.w600, color: ink),
-                onChanged: _saving
-                    ? null
-                    : (c) => setState(() => _category = c),
-                items: _categories
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
-                    .toList(),
-              ),
-            ),
+    return Row(
+      children: [
+        Expanded(
+          child: NeoDropdown<Category>(
+            label: l10n.translate('category'),
+            value: _category,
+            items: _categories
+                .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
+                .toList(),
+            onChanged: _saving ? null : (c) => setState(() => _category = c),
           ),
-          Container(width: 2, height: 24, color: ink.withValues(alpha: 0.2)),
-          IconButton(
-            tooltip: l10n.translate('manage_category'),
-            icon: const Icon(LucideIcons.slidersHorizontal,
-                size: 20, color: NeoColors.inkLight),
-            onPressed: _saving
-                ? null
+        ),
+        const SizedBox(width: 10),
+        // Tombol Manage Category sejajar dengan input (turunkan sedikit)
+        Padding(
+          padding: const EdgeInsets.only(top: 22),
+          child: NeoFab(
+            icon: LucideIcons.slidersHorizontal,
+            color: NeoColors.yellow,
+            onTap: _saving
+                ? () {}
                 : () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const CategoryManagementScreen()),
-                    );
+                    await Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryManagementScreen()));
                     _loadCategories();
                   },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

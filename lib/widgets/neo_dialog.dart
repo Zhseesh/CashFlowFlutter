@@ -44,18 +44,16 @@ class NeoDialogTitle extends StatelessWidget {
 class NeoDialogActions extends StatelessWidget {
   final List<Widget> children;
   const NeoDialogActions({super.key, required this.children});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          for (int i = 0; i < children.length; i++) ...[
-            if (i > 0) const SizedBox(width: 8),
-            children[i],
-          ],
-        ],
+      padding: const EdgeInsets.only(top: 20),
+      child: Wrap(
+        alignment: WrapAlignment.end,
+        spacing: 8,
+        runSpacing: 8,
+        children: children,
       ),
     );
   }

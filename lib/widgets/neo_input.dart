@@ -15,6 +15,7 @@ class NeoInput extends StatelessWidget {
   final bool obscureText;
   final List<TextInputFormatter>? inputFormatters;
   final TextStyle? textStyle;
+  final bool isSearch; // <- PARAMETER BARU
 
   const NeoInput({
     super.key,
@@ -30,11 +31,42 @@ class NeoInput extends StatelessWidget {
     this.obscureText = false,
     this.inputFormatters,
     this.textStyle,
+    this.isSearch = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final ink = Neo.ink(context);
+
+    if (isSearch) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Neo.paper(context),
+          borderRadius: BorderRadius.circular(NeoRadius.reg),
+          border: NeoBorders.reg(ink),
+          boxShadow: NeoShadows.sm(ink),
+        ),
+        child: TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          onChanged: onChanged,
+          onSubmitted: (v) {},
+          style: NeoText.body(14, weight: FontWeight.w600, color: ink),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: NeoText.body(14, color: ink.withValues(alpha: 0.4)),
+            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: ink, size: 20) : null,
+            suffixIcon: suffix,
+            filled: true,
+            fillColor: Colors.transparent,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,8 +74,7 @@ class NeoInput extends StatelessWidget {
         if (label != null)
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 6),
-            child: Text(label!.toUpperCase(),
-                style: NeoText.label(10, color: ink)),
+            child: Text(label!.toUpperCase(), style: NeoText.label(10, color: ink)),
           ),
         TextFormField(
           controller: controller,
@@ -53,19 +84,15 @@ class NeoInput extends StatelessWidget {
           onChanged: onChanged,
           validator: validator,
           inputFormatters: inputFormatters,
-          style: textStyle ??
-              NeoText.body(14, weight: FontWeight.w600, color: ink),
+          style: textStyle ?? NeoText.body(14, weight: FontWeight.w600, color: ink),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: NeoText.body(14, color: ink.withValues(alpha: 0.4)),
-            prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon, color: ink, size: 20)
-                : null,
+            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: ink, size: 20) : null,
             suffixIcon: suffix,
             filled: true,
             fillColor: Neo.paper(context),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(NeoRadius.reg),
               borderSide: BorderSide(color: ink, width: 3),

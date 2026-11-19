@@ -9,6 +9,8 @@ import '../utils/app_state.dart';
 import '../utils/formatters.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/neo_chip.dart';
+import '../widgets/neo_input.dart';
+import '../widgets/neo_skeleton.dart';
 import '../widgets/transaction_tile.dart';
 import 'transaction_form_screen.dart';
 import 'wallet_management_screen.dart';
@@ -180,32 +182,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 22),
 
               // ── SEARCH BAR ──
-              Container(
-                decoration: BoxDecoration(
-                  color: Neo.paper(context),
-                  borderRadius: BorderRadius.circular(NeoRadius.reg),
-                  border: NeoBorders.reg(ink),
-                  boxShadow: NeoShadows.sm(ink),
-                ),
-                child: TextField(
-                  controller: _searchCtrl,
-                  onSubmitted: (_) => _load(),
-                  textInputAction: TextInputAction.search,
-                  style: NeoText.body(14, weight: FontWeight.w600, color: ink),
-                  decoration: InputDecoration(
-                    hintText: l10n.translate('search_hint'),
-                    hintStyle: NeoText.body(14,
-                        color: ink.withValues(alpha: 0.4)),
-                    prefixIcon: Icon(LucideIcons.search, size: 20, color: ink),
-                    suffixIcon: IconButton(
-                      icon: Icon(LucideIcons.calendar, size: 20, color: ink),
-                      onPressed: _pickDateRange,
-                    ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
+              NeoInput(
+                controller: _searchCtrl,
+                hint: l10n.translate('search_hint'),
+                prefixIcon: LucideIcons.search,
+                isSearch: true,
+                onChanged: (_) => _load(),
+                suffix: IconButton(
+                  icon: Icon(LucideIcons.calendar, size: 20, color: ink),
+                  onPressed: _pickDateRange,
                 ),
               ),
 
@@ -271,12 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // ── TRANSACTIONS ──
               if (_loading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: CircularProgressIndicator(),
-                  ),
-                )
+                const NeoSkeletonList(count: 3)
               else if (_transactions.isEmpty)
                 Container(
                   padding: const EdgeInsets.all(28),

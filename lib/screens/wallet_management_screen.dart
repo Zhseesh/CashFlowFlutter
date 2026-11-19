@@ -13,6 +13,8 @@ import '../widgets/neo_button.dart';
 import '../widgets/neo_dialog.dart';
 import '../widgets/neo_fab.dart';
 import '../widgets/neo_input.dart';
+import '../widgets/neo_toast.dart';
+import '../widgets/neo_skeleton.dart';
 
 class WalletManagementScreen extends StatefulWidget {
   const WalletManagementScreen({super.key});
@@ -164,9 +166,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   Future<void> _deleteWallet(Wallet w) async {
     final l10n = AppLocalizations.of(context)!;
     if (_wallets.length == 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.translate('cannot_delete_last_wallet'))),
-      );
+      NeoToast.show(context, (l10n.translate('cannot_delete_last_wallet')));
       return;
     }
 
@@ -225,7 +225,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
             style: NeoText.display(18, color: ink)),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: NeoSkeleton(width: double.infinity, height: 80))
           : ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               children: [

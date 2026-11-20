@@ -304,11 +304,13 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   // ── CATEGORY DROPDOWN (Neo) ───────────────────────────
   Widget _buildCategoryField() {
     final l10n = AppLocalizations.of(context)!;
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.end, // Agar tombol sejajar bawah dengan input
       children: [
         Expanded(
           child: NeoDropdown<Category>(
-            label: l10n.translate('category'),
+            label: l10n.translate('category'), // Label otomatis di sini
             value: _category,
             items: _categories
                 .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
@@ -317,18 +319,32 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         ),
         const SizedBox(width: 10),
-        // Tombol Manage Category sejajar dengan input (turunkan sedikit)
+        // Tombol Pengaturan Kategori
         Padding(
-          padding: const EdgeInsets.only(top: 22),
-          child: NeoFab(
-            icon: LucideIcons.slidersHorizontal,
-            color: NeoColors.yellow,
+          padding: const EdgeInsets.only(bottom: 2), // Sedikit adjust
+          child: GestureDetector(
             onTap: _saving
-                ? () {}
+                ? null
                 : () async {
-                    await Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryManagementScreen()));
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const CategoryManagementScreen()),
+                    );
                     _loadCategories();
                   },
+            child: Container(
+              width: 56,
+              height: 54, // Samakan tinggi dengan NeoDropdown
+              decoration: BoxDecoration(
+                color: NeoColors.yellow,
+                borderRadius: BorderRadius.circular(NeoRadius.reg),
+                border: NeoBorders.reg(Neo.ink(context)),
+                boxShadow: NeoShadows.sm(Neo.ink(context)),
+              ),
+              child: const Icon(LucideIcons.slidersHorizontal,
+                  size: 24, color: NeoColors.inkLight),
+            ),
           ),
         ),
       ],
@@ -545,11 +561,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
             ),
             const SizedBox(height: 16),
 
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 6),
-              child: Text(l10n.translate('category').toUpperCase(),
-                  style: NeoText.label(10, color: ink)),
-            ),
             _buildCategoryField(),
             const SizedBox(height: 16),
 

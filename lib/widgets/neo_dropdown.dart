@@ -20,6 +20,19 @@ class NeoDropdown<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final ink = Neo.ink(context);
 
+    // Cari teks dari item yang sedang terpilih
+    String? selectedLabel;
+    if (value != null) {
+      for (var item in items) {
+        if (item.value == value) {
+          if (item.child is Text) {
+            selectedLabel = (item.child as Text).data;
+          }
+          break;
+        }
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -28,24 +41,42 @@ class NeoDropdown<T> extends StatelessWidget {
             padding: const EdgeInsets.only(left: 4, bottom: 6),
             child: Text(label!.toUpperCase(), style: NeoText.label(10, color: ink)),
           ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: Neo.paper(context),
+        PopupMenuButton<T>(
+          tooltip: '',
+          position: PopupMenuPosition.under,
+          color: Neo.paper(context),
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(NeoRadius.reg),
-            border: NeoBorders.reg(ink),
-            boxShadow: NeoShadows.sm(ink),
+            side: BorderSide(color: ink, width: 3), // Border tebal ala Settings
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<T>(
-              value: value,
-              isExpanded: true,
-              dropdownColor: Neo.paper(context),
+          onSelected: onChanged,
+          itemBuilder: (context) => items.map((item) {
+            return PopupMenuItem<T>(
+              value: item.value,
+              child: item.child,
+            );
+          }).toList(),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+            decoration: BoxDecoration(
+              color: Neo.paper(context),
               borderRadius: BorderRadius.circular(NeoRadius.reg),
-              icon: Icon(LucideIcons.chevronDown, size: 20, color: ink),
-              style: NeoText.body(14, weight: FontWeight.w600, color: ink),
-              onChanged: onChanged,
-              items: items,
+              border: NeoBorders.reg(ink),
+              boxShadow: NeoShadows.sm(ink),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    selectedLabel ?? '-',
+                    style: NeoText.body(14, weight: FontWeight.w600, color: ink),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Icon(LucideIcons.chevronDown, size: 20, color: ink),
+              ],
             ),
           ),
         ),

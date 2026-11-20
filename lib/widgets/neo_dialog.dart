@@ -47,13 +47,33 @@ class NeoDialogActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Jika tombol lebih dari 2, tumpuk ke bawah (Column) agar rapi
+    if (children.length > 2) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (int i = 0; i < children.length; i++) ...[
+              if (i > 0) const SizedBox(height: 10),
+              children[i],
+            ]
+          ],
+        ),
+      );
+    }
+
+    // Jika 1 atau 2 tombol, sejajarkan ke kanan (Row)
     return Padding(
       padding: const EdgeInsets.only(top: 20),
-      child: Wrap(
-        alignment: WrapAlignment.end,
-        spacing: 8,
-        runSpacing: 8,
-        children: children,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          for (int i = 0; i < children.length; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
+            children[i],
+          ],
+        ],
       ),
     );
   }

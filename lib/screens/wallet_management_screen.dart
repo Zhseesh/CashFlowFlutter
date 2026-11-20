@@ -262,70 +262,65 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   }
 
   Widget _buildWalletTile(Wallet w, Color ink, AppLocalizations l10n) {
-    final isActive = AppState.activeWallet.value?.id == w.id;
+  final isActive = AppState.activeWallet.value?.id == w.id;
 
-    return GestureDetector(
-      onTap: () {
-        AppState.activeWallet.value = w;
-        Navigator.pop(context);
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: () {
-                AppState.activeWallet.value = w;
-                Navigator.pop(context);
-              },
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: isActive ? NeoColors.lime : NeoColors.cyan,
-                  border: NeoBorders.thin(ink),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  isActive ? LucideIcons.check : LucideIcons.wallet,
-                  color: NeoColors.inkLight,
-                  size: 20,
-                ),
-              ),
+  return GestureDetector(
+    behavior: HitTestBehavior.opaque, 
+    onTap: () {
+      AppState.activeWallet.value = w;
+      Navigator.pop(context);
+    },
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: isActive ? NeoColors.lime : NeoColors.cyan,
+              border: NeoBorders.thin(ink),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(w.name,
-                      style: NeoText.body(14,
-                          weight: FontWeight.w700, color: ink),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${l10n.translate('created_at')} ${formatDate(DateTime.fromMillisecondsSinceEpoch(w.createdAt))}',
-                    style: NeoText.label(9,
-                        color: ink.withValues(alpha: 0.6)),
-                  ),
-                ],
-              ),
+            child: Icon(
+              isActive ? LucideIcons.check : LucideIcons.wallet,
+              color: NeoColors.inkLight,
+              size: 20,
             ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(w.name,
+                    style: NeoText.body(14,
+                        weight: FontWeight.w700, color: ink),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 2),
+                Text(
+                  '${l10n.translate('created_at')} ${formatDate(DateTime.fromMillisecondsSinceEpoch(w.createdAt))}',
+                  style: NeoText.label(9,
+                      color: ink.withValues(alpha: 0.6)),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(LucideIcons.pencil, size: 18,
+                color: ink.withValues(alpha: 0.7)),
+            onPressed: () => _editWallet(w),
+          ),
+          if (_wallets.length > 1)
             IconButton(
-              icon: Icon(LucideIcons.pencil, size: 18,
-                  color: ink.withValues(alpha: 0.7)),
-              onPressed: () => _editWallet(w),
+              icon: const Icon(LucideIcons.trash2,
+                  size: 18, color: NeoColors.red),
+              onPressed: () => _deleteWallet(w),
             ),
-            if (_wallets.length > 1)
-              IconButton(
-                icon: const Icon(LucideIcons.trash2,
-                    size: 18, color: NeoColors.red),
-                onPressed: () => _deleteWallet(w),
-              ),
-          ],
-        ),
+        ],
       ),
-    );
+    ),
+  );
   }
 }

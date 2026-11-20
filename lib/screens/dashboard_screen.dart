@@ -11,6 +11,7 @@ import '../widgets/balance_card.dart';
 import '../widgets/neo_chip.dart';
 import '../widgets/neo_input.dart';
 import '../widgets/neo_skeleton.dart';
+import '../widgets/neo_fab.dart';
 import '../widgets/transaction_tile.dart';
 import 'transaction_form_screen.dart';
 import 'wallet_management_screen.dart';
@@ -154,20 +155,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ],
                     ),
                   ),
-                  GestureDetector(
+                  NeoFab(
+                    icon: LucideIcons.settings,
+                    color: NeoColors.cyan,
+                    size: 44,
+                    radius: 12,
                     onTap: _openSettings,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: NeoColors.cyan,
-                        borderRadius: BorderRadius.circular(12),
-                        border: NeoBorders.reg(ink),
-                        boxShadow: NeoShadows.sm(ink),
-                      ),
-                      child: Icon(LucideIcons.settings, size: 20,
-                          color: NeoColors.inkLight),
-                    ),
                   ),
                 ],
               ),

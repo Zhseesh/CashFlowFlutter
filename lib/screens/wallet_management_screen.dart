@@ -225,7 +225,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
             style: NeoText.display(18, color: ink)),
       ),
       body: _loading
-          ? Center(child: const NeoSkeletonList(count: 1))
+          ? Center(child: const NeoSkeletonList(count: 15))
           : ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               children: [

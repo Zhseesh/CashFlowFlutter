@@ -249,7 +249,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen>
         ),
       ),
       body: _loading
-          ? Center(child: const NeoSkeletonList(count: 8))
+          ? Center(child: const NeoSkeletonList(count: 15))
           : TabBarView(
               controller: _tabController,
               children: [

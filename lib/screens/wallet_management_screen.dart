@@ -225,7 +225,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
             style: NeoText.display(18, color: ink)),
       ),
       body: _loading
-          ? Center(child: NeoSkeleton(width: double.infinity, height: 80))
+          ? Center(child: const NeoSkeletonList(count: 1))
           : ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               children: [
@@ -273,18 +273,24 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: isActive ? NeoColors.lime : NeoColors.cyan,
-                border: NeoBorders.thin(ink),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                isActive ? LucideIcons.check : LucideIcons.wallet,
-                color: NeoColors.inkLight,
-                size: 20,
+            GestureDetector(
+              onTap: () {
+                AppState.activeWallet.value = w;
+                Navigator.pop(context);
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isActive ? NeoColors.lime : NeoColors.cyan,
+                  border: NeoBorders.thin(ink),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  isActive ? LucideIcons.check : LucideIcons.wallet,
+                  color: NeoColors.inkLight,
+                  size: 20,
+                ),
               ),
             ),
             const SizedBox(width: 12),

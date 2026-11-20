@@ -256,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // ── TRANSACTIONS ──
               if (_loading)
-                const NeoSkeletonList(count: 3)
+                const NeoSkeletonList(count: 5)
               else if (_transactions.isEmpty)
                 Container(
                   padding: const EdgeInsets.all(28),

@@ -17,6 +17,7 @@ import '../widgets/neo_button.dart';
 import '../widgets/neo_input.dart';
 import '../widgets/neo_dropdown.dart';
 import '../widgets/neo_toast.dart';
+import '../widgets/neo_fab.dart';
 import 'category_management_screen.dart';
 
 class TransactionFormScreen extends StatefulWidget {
@@ -321,30 +322,16 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         // Tombol Pengaturan Kategori
         Padding(
           padding: const EdgeInsets.only(bottom: 2), // Sedikit adjust
-          child: GestureDetector(
+          child: NeoFab(
+            icon: LucideIcons.slidersHorizontal,
+            color: NeoColors.yellow,
             onTap: _saving
-                ? null
+                ? () {}
                 : () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const CategoryManagementScreen()),
-                    );
+                    await Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryManagementScreen()));
                     _loadCategories();
                   },
-            child: Container(
-              width: 56,
-              height: 54, // Samakan tinggi dengan NeoDropdown
-              decoration: BoxDecoration(
-                color: NeoColors.yellow,
-                borderRadius: BorderRadius.circular(NeoRadius.reg),
-                border: NeoBorders.reg(Neo.ink(context)),
-                boxShadow: NeoShadows.sm(Neo.ink(context)),
-              ),
-              child: const Icon(LucideIcons.slidersHorizontal,
-                  size: 24, color: NeoColors.inkLight),
-            ),
-          ),
+          ),          
         ),
       ],
     );

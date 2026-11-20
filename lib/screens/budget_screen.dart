@@ -142,7 +142,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
             style: NeoText.display(18, color: ink)),
       ),
       body: _loading
-          ? Center(child: NeoSkeleton(width: double.infinity, height: 80))
+          ? Center(child: const NeoSkeletonList(count: 7))
           : ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: _categories.length,

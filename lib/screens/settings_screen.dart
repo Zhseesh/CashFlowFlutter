@@ -106,12 +106,12 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _buildSectionTitle(l10n.translate('features'), ink),
-          _buildNeoWrapper(
-            context,
-            ink,
-            child: GestureDetector(
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const BudgetScreen())),
+          GestureDetector(
+            onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const BudgetScreen())),
+            child: _buildNeoWrapper(
+              context,
+              ink,
               child: _buildSettingTile(
                 context,
                 ink,
@@ -125,12 +125,12 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _buildSectionTitle(l10n.translate('others'), ink),
-          _buildNeoWrapper(
-            context,
-            ink,
-            child: GestureDetector(
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const AboutScreen())),
+          GestureDetector(
+            onTap: () => Navigator.push(context, 
+                MaterialPageRoute(builder: (_) => const AboutScreen())),
+            child: _buildNeoWrapper(
+              context,
+              ink,
               child: _buildSettingTile(
                 context,
                 ink,
